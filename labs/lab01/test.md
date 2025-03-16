@@ -1,60 +1,53 @@
 1. Топология сети:
 ![Схема](https://github.com/user-attachments/assets/2b42b5e4-ca3e-46bf-be5c-354f684afea0)
 2. Распределение адресного пространства:
-Адреса для интерфейсов Lo overlay:
-Spine501 - 10.255.5.1/32
-Spine502 - 10.255.5.2/32
-Leaf511 - 10.255.5.11/32
-Leaf512 - 10.255.5.12/32
-Leaf513 - 10.255.5.13/32
-Leaf514 - 10.255.5.14/32
-Leaf515 - 10.255.5.15/32
-Leaf516 - 10.255.5.16/32
-Leaf517 - 10.255.5.17/32
-Leaf518 - 10.255.5.18/32
-Leaf519 - 10.255.5.19/32
-Leaf520 - 10.255.5.20/32
-Leaf521 - 10.255.5.21/32
-Leaf522 - 10.255.5.22/32
+### Адреса для интерфейсов Lo overlay:
+|Device|Ip-address
+|---|---|
+|Spine501| 10.255.5.1/32|
+|Spine502| 10.255.5.2/32|
+|Leaf511| 10.255.5.11/32|
+|Leaf512| 10.255.5.12/32|
+|Leaf513| 10.255.5.13/32|
+|Leaf514| 10.255.5.14/32|
+|Leaf515| 10.255.5.15/32|
+|Leaf516| 10.255.5.16/32|
+|Leaf517| 10.255.5.17/32|
+|Leaf518| 10.255.5.18/32|
+|Leaf519| 10.255.5.19/32|
+|Leaf520| 10.255.5.20/32|
+|Leaf521| 10.255.5.21/32|
+|Leaf522| 10.255.5.22/32|
 
-Адреса для интерфейсов UnderLay:
-Spine501 Eth1 - 10.254.15.1/30 < ---> Leaf511 Eth49 - 10.254.15.2/30
-Spine502 Eth1 - 10.254.16.1/30 < ---> Leaf511 Eth50 - 10.254.16.2/30
+### Адреса для интерфейсов UnderLay:
+|Device|Port|Ip-address|---|Device|Port|Ip-address
+|---|---|---|---|---|---|---|
+|Spine501| Eth1| 10.254.15.1/30| < ---> |Leaf511| Eth49| 10.254.15.2/30|
+|Spine502| Eth1| 10.254.16.1/30| < ---> |Leaf511| Eth50|1 0.254.16.2/30|
+|Spine501| Eth2| 10.254.15.5/30| < ---> |Leaf512| Eth49| 10.254.15.6/30|
+|Spine502| Eth2| 10.254.16.5/30| < ---> |Leaf512| Eth50| 10.254.16.6/30|
+|Spine501| Eth3| 10.254.15.9/30| < ---> |Leaf513| Eth49| 10.254.15.10/30|
+|Spine502| Eth3| 10.254.16.9/30| < ---> |Leaf513| Eth50| 10.254.16.10/30|
+|Spine501| Eth4| 10.254.15.13/30| < ---> |Leaf514| Eth49| 10.254.15.14/30|
+|Spine502| Eth4| 10.254.16.13/30| < ---> |Leaf514| Eth50| 10.254.16.14/30|
+|Spine501| Eth5| 10.254.15.17/30| < ---> |Leaf515| Eth49| 10.254.15.18/30|
+|Spine502| Eth5| 10.254.16.17/30| < ---> |Leaf515| Eth50| 10.254.16.18/30|
+|Spine501| Eth6| 10.254.15.21/30| < ---> |Leaf516| Eth49| 10.254.15.22/30|
+|Spine502| Eth6| 10.254.16.21/30| < ---> |Leaf516| Eth50| 10.254.16.22/30|
+|Spine501| Eth7| 10.254.15.25/30| < ---> |Leaf517| Eth49| 10.254.15.26/30|
+|Spine502| Eth7| 10.254.16.25/30| < ---> |Leaf517| Eth50| 10.254.16.26/30|
+|Spine501| Eth8| 10.254.15.29/30| < ---> |Leaf518| Eth49| 10.254.15.30/30|
+|Spine502| Eth8| 10.254.16.29/30| < ---> |Leaf518| Eth50| 10.254.16.30/30|
+|Spine501| Eth9| 10.254.15.33/30| < ---> |Leaf519| Eth49| 10.254.15.34/30|
+|Spine502| Eth9| 10.254.16.33/30| < ---> |Leaf519| Eth50| 10.254.16.34/30|
+|Spine501| Eth10| 10.254.15.37/30| < ---> |Leaf520| Eth49| 10.254.15.38/30|
+|Spine502| Eth10| 10.254.16.37/30| < ---> |Leaf520| Eth50| 10.254.16.38/30|
+|Spine501| Eth11| 10.254.15.41/30| < ---> |Leaf521| Eth49| 10.254.15.42/30|
+|Spine502| Eth11| 10.254.16.41/30| < ---> |Leaf521| Eth50| 10.254.16.42/30|
+|Spine501| Eth12| 10.254.15.45/30| < ---> |Leaf522| Eth49| 10.254.15.46/30|
+|Spine502| Eth12| 10.254.16.45/30| < ---> |Leaf522| Eth50| 10.254.16.46/30|
 
-Spine501 Eth2 - 10.254.15.5/30 < ---> Leaf512 Eth49 - 10.254.15.6/30
-Spine502 Eth2 - 10.254.16.5/30 < ---> Leaf512 Eth50 - 10.254.16.6/30
-
-Spine501 Eth3 - 10.254.15.9/30 < ---> Leaf513 Eth49 - 10.254.15.10/30
-Spine502 Eth3 - 10.254.16.9/30 < ---> Leaf513 Eth50 - 10.254.16.10/30
-
-Spine501 Eth4 - 10.254.15.13/30 < ---> Leaf514 Eth49 - 10.254.15.14/30
-Spine502 Eth4 - 10.254.16.13/30 < ---> Leaf514 Eth50 - 10.254.16.14/30
-
-Spine501 Eth5 - 10.254.15.17/30 < ---> Leaf515 Eth49 - 10.254.15.18/30
-Spine502 Eth5 - 10.254.16.17/30 < ---> Leaf515 Eth50 - 10.254.16.18/30
-
-Spine501 Eth6 - 10.254.15.21/30 < ---> Leaf516 Eth49 - 10.254.15.22/30
-Spine502 Eth6 - 10.254.16.21/30 < ---> Leaf516 Eth50 - 10.254.16.22/30
-
-Spine501 Eth7 - 10.254.15.25/30 < ---> Leaf517 Eth49 - 10.254.15.26/30
-Spine502 Eth7 - 10.254.16.25/30 < ---> Leaf517 Eth50 - 10.254.16.26/30
-
-Spine501 Eth8 - 10.254.15.29/30 < ---> Leaf518 Eth49 - 10.254.15.30/30
-Spine502 Eth8 - 10.254.16.29/30 < ---> Leaf518 Eth50 - 10.254.16.30/30
-
-Spine501 Eth9 - 10.254.15.33/30 < ---> Leaf519 Eth49 - 10.254.15.34/30
-Spine502 Eth9 - 10.254.16.33/30 < ---> Leaf519 Eth50 - 10.254.16.34/30
-
-Spine501 Eth10 - 10.254.15.37/30 < ---> Leaf520 Eth49 - 10.254.15.38/30
-Spine502 Eth10 - 10.254.16.37/30 < ---> Leaf520 Eth50 - 10.254.16.38/30
-
-Spine501 Eth11 - 10.254.15.41/30 < ---> Leaf521 Eth49 - 10.254.15.42/30
-Spine502 Eth11 - 10.254.16.41/30 < ---> Leaf521 Eth50 - 10.254.16.42/30
-
-Spine501 Eth12 - 10.254.15.45/30 < ---> Leaf522 Eth49 - 10.254.15.46/30
-Spine502 Eth12 - 10.254.16.45/30 < ---> Leaf522 Eth50 - 10.254.16.46/30
-
-3. План работ:
+3. ### План работ:
    Название всех Leaf и Spine расшифровываются следующим образом:
    Spine501:
    Spine - роль коммутатора в фабрике VxLAN
@@ -75,7 +68,8 @@ Spine502 Eth12 - 10.254.16.45/30 < ---> Leaf522 Eth50 - 10.254.16.46/30
 - если дополнительно не будет рост по стойкам, мы добавляем по одному линку между Spine и Leaf, добавляем на данные интерфейсы ip адреса и прописываем в BGP neighbor. Таким образом мы вдвое увеличим пропускную способность фабрики.
 - если не достаточно портов либо увеличилось количество стоек и первый вариант не возможен, мы добавляем дополнительные Spine и увеличиваем пропускную способность до нужной скорости фабрики.
 
-   Конфигурации устройств:
+Конфигурации устройств:
+```
    Spine501:
    hostname spine501
    aaa authorization exec default local
@@ -141,8 +135,9 @@ interface Ethernet12
    ip address 10.254.15.45/30
 interface Loopback0
    ip address 10.255.5.1/32
-
+```
 Spine502
+```
 hostname spine502
 aaa authorization exec default local
 
@@ -207,8 +202,9 @@ interface Ethernet12
    ip address 10.254.16.45/30
 interface Loopback0
    ip address 10.255.5.2/32
-
+```
 Leaf511
+```
 hostname leaf511
 interface Ethernet49
    description -> spine501
@@ -222,8 +218,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.11/32
-
+```
 Leaf512
+```
 hostname leaf512
 interface Ethernet49
    description -> spine501
@@ -237,8 +234,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.12/32
-
+```
 Leaf513
+```
 hostname leaf513
 interface Ethernet49
    description -> spine501
@@ -252,8 +250,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.13/32
-
+```
 Leaf514
+```
 hostname leaf514
 interface Ethernet49
    description -> spine501
@@ -267,8 +266,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.14/32
-
+```
 Leaf515
+```
 hostname leaf515
 interface Ethernet49
    description -> spine501
@@ -282,8 +282,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.15/32
-
+```
 Leaf516
+```
 hostname leaf516
 interface Ethernet49
    description -> spine501
@@ -297,8 +298,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.16/32
-
+```
 Leaf517
+```
 hostname leaf517
 interface Ethernet49
    description -> spine501
@@ -312,8 +314,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.17/32
-
+```
 Leaf518
+```
 hostname leaf518
 interface Ethernet49
    description -> spine501
@@ -327,8 +330,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.18/32
-
+```
 Leaf519
+```
 hostname leaf519
 interface Ethernet49
    description -> spine501
@@ -342,8 +346,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.19/32
-
+```
 Leaf520
+```
 hostname leaf520
 interface Ethernet49
    description -> spine501
@@ -357,8 +362,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.20/32
-
+```
 Leaf521
+```
 hostname leaf521
 interface Ethernet49
    description -> spine501
@@ -372,8 +378,9 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.21/32
-
+```
 Leaf522
+```
 hostname leaf522
 interface Ethernet49
    description -> spine501
@@ -387,4 +394,4 @@ interface Ethernet50
 
 interface Loopback0
    ip address 10.255.5.22/32
-   
+```   
