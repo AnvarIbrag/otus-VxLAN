@@ -1,5 +1,5 @@
 1. Топология сети:
-![Схема](D:\Otus\otus-VxLAN\labs\lab01)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab01/%D0%A1%D1%85%D0%B5%D0%BC%D0%B0.JPG)
 2. Распределение адресного пространства:
 ### Адреса для интерфейсов Lo overlay:
 |Device|Ip-address
