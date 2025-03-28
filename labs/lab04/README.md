@@ -1,343 +1,1134 @@
-# Планирование адресного пространства. IPv4/6
+### 1. Топология сети:
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab01/%D0%A1%D1%85%D0%B5%D0%BC%D0%B0.JPG)
 
-#### Цель:
-В данной самостоятельной работе необходимо распланировать адресное пространство.<br>
-Настроить IP на всех активных портах для дальнейшей работы над проектом.<br>
-Адресное пространство должно быть задокументировано.<br>
+### 2.Распределение адресного пространства:
+### Адреса для интерфейсов Lo overlay:
+|Device|Ip-address
+|---|---|
+|Spine501| 10.255.5.1/32|
+|Spine502| 10.255.5.2/32|
+|Leaf511| 10.255.5.11/32|
+|Leaf512| 10.255.5.12/32|
+|Leaf513| 10.255.5.13/32|
+|Leaf514| 10.255.5.14/32|
+|Leaf515| 10.255.5.15/32|
+|Leaf516| 10.255.5.16/32|
+|Leaf517| 10.255.5.17/32|
+|Leaf518| 10.255.5.18/32|
+|Leaf519| 10.255.5.19/32|
+|Leaf520| 10.255.5.20/32|
+|Leaf521| 10.255.5.21/32|
+|Leaf522| 10.255.5.22/32|
 
-#### Описание/Пошаговая инструкция выполнения домашнего задания:
+### Адреса для интерфейсов UnderLay:
+|Device|Port|Ip-address|---|Device|Port|Ip-address
+|---|---|---|---|---|---|---|
+|Spine501| Eth1| 10.254.15.1/30| < ---> |Leaf511| Eth49| 10.254.15.2/30|
+|Spine502| Eth1| 10.254.16.1/30| < ---> |Leaf511| Eth50|1 0.254.16.2/30|
+|Spine501| Eth2| 10.254.15.5/30| < ---> |Leaf512| Eth49| 10.254.15.6/30|
+|Spine502| Eth2| 10.254.16.5/30| < ---> |Leaf512| Eth50| 10.254.16.6/30|
+|Spine501| Eth3| 10.254.15.9/30| < ---> |Leaf513| Eth49| 10.254.15.10/30|
+|Spine502| Eth3| 10.254.16.9/30| < ---> |Leaf513| Eth50| 10.254.16.10/30|
+|Spine501| Eth4| 10.254.15.13/30| < ---> |Leaf514| Eth49| 10.254.15.14/30|
+|Spine502| Eth4| 10.254.16.13/30| < ---> |Leaf514| Eth50| 10.254.16.14/30|
+|Spine501| Eth5| 10.254.15.17/30| < ---> |Leaf515| Eth49| 10.254.15.18/30|
+|Spine502| Eth5| 10.254.16.17/30| < ---> |Leaf515| Eth50| 10.254.16.18/30|
+|Spine501| Eth6| 10.254.15.21/30| < ---> |Leaf516| Eth49| 10.254.15.22/30|
+|Spine502| Eth6| 10.254.16.21/30| < ---> |Leaf516| Eth50| 10.254.16.22/30|
+|Spine501| Eth7| 10.254.15.25/30| < ---> |Leaf517| Eth49| 10.254.15.26/30|
+|Spine502| Eth7| 10.254.16.25/30| < ---> |Leaf517| Eth50| 10.254.16.26/30|
+|Spine501| Eth8| 10.254.15.29/30| < ---> |Leaf518| Eth49| 10.254.15.30/30|
+|Spine502| Eth8| 10.254.16.29/30| < ---> |Leaf518| Eth50| 10.254.16.30/30|
+|Spine501| Eth9| 10.254.15.33/30| < ---> |Leaf519| Eth49| 10.254.15.34/30|
+|Spine502| Eth9| 10.254.16.33/30| < ---> |Leaf519| Eth50| 10.254.16.34/30|
+|Spine501| Eth10| 10.254.15.37/30| < ---> |Leaf520| Eth49| 10.254.15.38/30|
+|Spine502| Eth10| 10.254.16.37/30| < ---> |Leaf520| Eth50| 10.254.16.38/30|
+|Spine501| Eth11| 10.254.15.41/30| < ---> |Leaf521| Eth49| 10.254.15.42/30|
+|Spine502| Eth11| 10.254.16.41/30| < ---> |Leaf521| Eth50| 10.254.16.42/30|
+|Spine501| Eth12| 10.254.15.45/30| < ---> |Leaf522| Eth49| 10.254.15.46/30|
+|Spine502| Eth12| 10.254.16.45/30| < ---> |Leaf522| Eth50| 10.254.16.46/30|
 
-В этой самостоятельной работе мы ожидаем, что вы самостоятельно:
+### 3. План работ:
+   Необходимо соединить интерфейсы Leaf и Spine коммутаторов с помощью технологии eBGP. Для полносты  тестов созданной сети, необходимо настроить eBGP на underlay и overlay уровнях VxLAN.
+   
+   
+   Для underlay: 
+   - соединить по схеме интерфейсы
+   - ip адреса должны соответствовать схеме
+   - используем интерфейсы Lo 0 и интерфейсы подключенные к Spine добавляем их в eBGP
+   - мы будем ананонсировать подсети
+   - для настройки будем использовать разные AS
 
-1) Разработаете и задокументируете адресное пространство для лабораторного стенда.
-2) Настроите IP адреса на каждом активном порту.
-3) Настроите каждый VPC в каждом офисе в своем VLAN.
-4) Настроите VLAN управления для сетевых устройств. 
-5) Настроите сети офисов так, чтобы не возникало broadcast штормов, а использование линков было максимально оптимизировано.
+   Для overlay: 
+    - соединить по схеме интерфейсы
+   - ip адреса должны соответствовать схеме
+   - используем ip адреса интерфейсов подключенных к Spine добавляем их в eBGP
+   - мы будем ананонсировать разные подсети
+   - для настройки будем использовать разные AS
 
-
-
-### Принципы назначения IP адресов
-
-### Выдача IPv4 адресов 
-
-Принципы выделения IPv4-адресов:
-- для организации внутренней связности выдаем адреса из приватной сети `10.0.0.0/8`
-- Management адреса коммутаторов из `172.16.0.0/12`
-- последний октет адреса совпадает с номером устройства на схеме.  
-предпоследний октет, по возможности, выбирается из номеров интерфейсов устройств линка.  Например для линка `R12 e0/2-e0/0 R14` будем выбирать номер предпоследнего октета из {0, 2}.  
-Условие выбора - отсутствие конфликтов с другими IP.
-- белые адреса выбираются похожими на номер AS, в которой они используются.
-Например, провайдеры из Триады (AS `520`) выдают клиентам сети с первым октетом `52` (`52.0.0.24`).
-- подсеть `192.168.0.0/16` буду использовать по мере необходимости далее. 
-
-
-### Генерация IPv6 адресов
-
-**IPv6** адреса будем генерировать, на основе на основе линков устройств (взяты из схемы лабораторной работы) и назначенных на предыдущем шаге IPv4 адресов.  
-
-По правилу, описаному на языке python в `data/gen_ipv6.py`.
-<details>
-
-<summary> попытка генерации IPv6 </summary>
-
-```python
-def generate_ipv6(ipv4, provider_asn, link):
-    a, b, c, d = ipv4.split('.')
-    dev1, int1, _, int2, dev2 = link.split(' ')
-    first_dev, second_dev = sort_dev_ids(device_id(dev1), device_id(dev2))
-    position = 1 if device_id(dev1) == first_dev else 2
-    if a == '10' and b == '0': # 10.0/16
-        ipv6 = f"2001:0:{first_dev}:{second_dev}::{position}"  # internal
-    else:
-        ipv6 = f"2001:{provider_asn}:{first_dev}:{second_dev}::{position}"  # external
-    link_local = "FE80::" + d
-    return ipv6, link_local
+Конфигурации устройств:
 ```
-</details>
+   Spine501:
+   
+   hostname spine501
+   aaa authorization exec default local
+   
+interface Ethernet1
+   description ->leaf511
+   no switchport
+   ip address 10.254.15.1/30
+   
+interface Ethernet2
+   description ->leaf512
+   no switchport
+   ip address 10.254.15.5/30
+   
+interface Ethernet3
+   description ->leaf513
+   no switchport
+   ip address 10.254.15.9/30
+   
+interface Ethernet4
+   description ->leaf1414
+   no switchport
+   ip address 10.254.15.13/30
+   
+
+interface Ethernet5
+   description ->leaf515
+   no switchport
+   ip address 10.254.15.17/30
+   
+
+interface Ethernet6
+   description ->leaf516
+   no switchport
+   ip address 10.254.15.21/30
+   
+
+interface Ethernet7
+   description ->leaf518
+   no switchport
+   ip address 10.254.15.25/30
+   
+
+interface Ethernet8
+   description ->leaf519
+   no switchport
+   ip address 10.254.15.29/30
+   
+
+interface Ethernet9
+   description ->leaf519
+   no switchport
+   ip address 10.254.15.33/30
+   
+
+interface Ethernet10
+   description ->leaf520
+   no switchport
+   ip address 10.254.15.37/30
+   
+
+interface Ethernet11
+   description ->leaf521
+   no switchport
+   ip address 10.254.15.41/30
+   
+
+interface Ethernet12
+   description ->leaf522
+   no switchport
+   ip address 10.254.15.45/30
+   
+
+interface Loopback0
+   ip address 10.255.5.1/32
+   
+router bgp 65500
+   router-id 10.255.5.1
+   update wait-install
+   no bgp default ipv4-unicast
+   bgp listen range 10.255.5.0/24 peer-group OVERLAY peer-filter leaf-as-range
+   bgp listen range 10.254.15.0/24 peer-group UNDERLAY peer-filter leaf-as-range
+   neighbor OVERLAY peer group
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 5
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor OVERLAY maximum-routes 1000
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor UNDERLAY maximum-routes 100
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.1/32
 
-К сожалению полностью автоматизировать ~~пока~~ не удалось, в итоге пришлось незначительно править выданные адреса вручную.
-
-**Link-local** адреса будем выделять из `FE80::/10` по номеру устройства.  
-Например для R22 адрес будет `FE80::22`.
-
-
-#### Полезные ссылки:
-- [RFC1918. Про выделение IPv4-адресов для приватных сетей](https://datatracker.ietf.org/doc/html/rfc1918)
-- [RFC3021. Using 31-bit prefixes on IPv4 PTP Links](https://datatracker.ietf.org/doc/html/rfc3021). Сокращение кол-ва используемых IP.
-- [RFC3849. Про использование 2001:DB8::/32 для документации](https://datatracker.ietf.org/doc/html/rfc3849)
-- [Вдохновение можно поискать в СДСМ](https://linkmeup.ru/blog/1188/). Примеры L1, L2, L3 документации.
-- [хороший конвертер Markdown в CSV](https://tableconvert.com/markdown-to-csv) 
-- [хороший конвертер CSV в Markdown](https://www.convertcsv.com/csv-to-markdown.htm)
-
-
-## Таблицы IP адресов
-
-Далее распишем IP адреса по офисам.
-
-### Москва (AS1001)
-
-Большой и старый офис.
-
-Реализована 3-х уровневая модель:
-- Core layer – R14, R15  
-- Distribution layer – SW4, SW5, R12, R13  
-- Access layer – SW2, SW3, VPC1, VPC7  
-
-Так как имеется много коммутаторов, ~~а мы ленивые и небогатые~~, то для организации проще использовать _STP based_ схему организации 
-access layer.
-
-
-|Device|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|------|----|----------|----------------------------------------|----|------------------|------------------|
-|VPC1  |eth0|100.0.0.1 |2001:1001:1:3::1                        |-   |VPC1 eth0 - e0/2 SW3|                 |
-|VPC7  |eth0|100.0.1.7 |2001:1001:2:7::2                        |-   |VPC7 eth0 - e0/2 SW2|                 |
-|SW2   |    |172.16.0.2|2001:1001:0:172::2                      |1000|                  |Management (VLAN)  |
-|SW2   |e0/2|-         |-                                       |70  |SW2 e0/2 - eth0 VPC7|Accounting (VLAN)|
-|SW3   |    |172.16.0.3|2001:1001:0:172::3                      |1000|                  |Management (VLAN)  |
-|SW3   |e0/2|-         |-                                       |10  |SW3 e0/2 - eth0 VPC1|General (VLAN)   |
-|SW4   |    |172.16.0.4|2001:1001:0:172::4                      |1000|                  |Management (VLAN)  |
-|SW5   |    |172.16.0.5|2001:1001:0:172::5                      |1000|                  |Management (VLAN)  |
-|R12   |e0/0|100.0.0.1 |2001:1001:4:12::2                       |-   |R12 e0/0 - e1/0 SW4|Connectivity      |
-|R12   |e0/1|100.0.1.3 |2001:1001:5:12::2                       |-   |R12 e0/1 - e1/1 SW5|Robustness        |
-|R12   |e0/2|10.0.2.12 |2001:0:12:14::1                         |-   |R12 e0/2 - e0/0 R14|Connectivity      |
-|R12   |e0/3|10.0.1.12 |2001:0:12:15::1                         |-   |R12 e0/3 - e0/1 R15|Robustness        |
-|R13   |e0/0|100.0.1.1 |2001:1001:5:13::2                       |-   |R13 e0/0 - e1/0 SW5|Connectivity      |
-|R13   |e0/1|100.0.0.3 |2001:1001:4:13::2                       |-   |R13 e0/1 - e1/1 SW4|Robustness        |
-|R13   |e0/2|10.0.2.13 |2001:0:13:15::1                         |-   |R13 e0/2 - e0/0 R15|Connectivity      |
-|R13   |e0/3|10.0.1.13 |2001:0:13:14::1                         |-   |R13 e0/3 - e0/1 R14|Robustness        |
-|R14   |e0/0|10.0.2.14 |2001:0:12:14::2                         |-   |R14 e0/0 - e0/2 R12|Connectivity      |
-|R14   |e0/1|10.0.1.14 |2001:0:13:14::2                         |-   |R14 e0/1 - e0/3 R13|Robustness        |
-|R14   |e0/2|101.0.0.14|2001:1001:14:22::1                      |-   |R14 e0/2 - e0/0 R22|BGP: Provider link|
-|R14   |e0/3|10.0.3.14 |2001:0:14:19::1                         |-   |R14 e0/3 - e0/0 R19|Default (OSPF)    |
-|R15   |e0/0|10.0.2.15 |2001:0:13:15::2                         |-   |R15 e0/0 - e0/2 R13|Connectivity      |
-|R15   |e0/1|10.0.1.15 |2001:0:12:15::2                         |-   |R15 e0/1 - e0/3 R12|Robustness        |
-|R15   |e0/2|30.0.0.15 |2001:1001:15:21::1                      |-   |R15 e0/2 - e0/0 R21|BGP: Provider link|
-|R15   |e0/3|10.0.3.15 |2001:0:15:20::1                         |-   |R15 e0/3 - e0/0 R20|Default (OSPF)    |
-|R19   |e0/0|10.0.3.19 |2001:0:14:19::2                         |-   |R19 e0/0 - e0/3 R14|Default (OSPF)    |
-|R20   |e0/0|10.0.3.20 |2001:0:15:20::2                         |-   |R20 e0/0 - e0/3 R15|Default (OSPF)    |
-
-
-
-### Питер (AS2042)
-
-Современный офис.  
-Офис меньше (т.е. не нужно настраивать много сетей), поэтому 
-для организации уровня доступа будем использовать _L3 access layer_ схему 
-~~(а потом сделаем из него ЦОД)~~.
-
-|Device|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|------|----|----------|----------------------------------------|----|------------------|------------------|
-|VPC8  |eth0|200.0.0.8 |2001:2042:8:9::1                        |80  |VPC8 eth0 – e0/2 SW9|                  |
-|VPC11 |eth0|200.0.1.11|2001:2042:10:11::2                      |110 |VPC11 eth0 – e0/2 SW10|                  |
-|SW9   |    |172.16.0.9|                                        |1100|                  |Management        |
-|SW9   |e0/2|200.0.0.1 |2001:2042:8:9::2                        |80  |SW9 e0/2 - eth0 VPC8|Developers (VLAN) |
-|SW9   |    |10.0.1.9  |2001:0:9:17::1                          |-   |SW9 e0/3 - e0/0 R17|End Users         |
-|SW10  |    |172.0.0.10|                                        |1100|                  |Management        |
-|SW10  |e0/2|200.0.1.1 |2001:2042:10:11::1                      |110 |SW10 e0/2 - eth0 VPC11|Sales (VLAN)      |
-|SW10  |    |10.0.0.10 |2001:0:10:16::1                         |-   |SW10 e0/3-e0/0 R16|End Users         |
-|R16   |e0/0|10.0.0.16 |2001:0:10:16::2                         |-   |R16 e0/0 – e0/3 SW10|Connectivity      |
-|R16   |e0/1|10.0.1.16 |2001:0:16:18::1                         |-   |R16 e0/1 – e0/0 R18|Connectivity      |
-|R16   |e0/2|10.0.2.16 |2001:0:16:9::1                          |-   |R16 e0/2 – e1/0 SW9|Robustness        |
-|R16   |e0/3|10.0.3.16 |2001:0:16:32::1                         |-   |R16 e0/3 – e0/0 R32|Default (EIGRP)   |
-|R17   |e0/0|10.0.1.17 |2001:0:9:17::2                          |-   |R17 e0/0 – e0/3 SW9|Connectivity      |
-|R17   |e0/1|10.0.0.17 |2001:0:17:18::1                         |-   |R17 e0/1 – e0/1 R18|Connectivity      |
-|R17   |e0/2|10.0.2.17 |2001:0:10:17::2                         |-   |R17 e0/2 – e1/0 SW10|Robustness        |
-|R18   |e0/0|10.0.1.18 |2001:0:16:18::2                         |-   |R18 e0/0 – e0/1 R16|Connectivity      |
-|R18   |e0/1|10.0.0.18 |2001:0:17:18::2                         |-   |R18 e0/1 – e0/1 R17|Connectivity      |
-|R18   |e0/2|52.0.1.18 |2001:520:18:24::1                       |-   |R18 e0/2 – e0/3 R24|BGP: Provider link|
-|R18   |e0/3|52.0.2.18 |2001:520:18:26::1                       |-   |R18 e0/3 – e0/3 R26|BGP: Provider link|
-|R32   |e0/0|10.0.3.32 |2001:0:16:32::2                         |-   |R32 e0/0 – e0/3 R16|Default (EIGRP)   |
-
-### Ламас (AS301)
-
-Московский провайдер  
-Между Ламас и Киторн – серый пиринговый стык.  
-
-|Device Name|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|-----------|----|----------|----------------------------------------|----|------------------|------------------|
-|R21        |e0/0|30.0.0.21 |2001:301:15:21::2                       |-   |R21 e0/0 – e0/2 R15|BGP: Customer link|
-|R21        |e0/1|192.168.0.21|2001:0:21:22::1                         |-   |R21 e0/1 – e0/1 R22|BGP: Peering link |
-|R21        |e0/2|52.0.0.21 |2001:520:21:24::1                       |-   |R21 e0/2 – e0/0 R24|BGP: Provider link|
-
-
-### Киторн (AS101)
-
-Московский провайдер
-
-|Device Name|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|-----------|----|----------|----------------------------------------|----|------------------|------------------|
-|R22        |e0/0|101.0.0.22|2001:101:14:22::2                       |-   |R22 e0/0 – e0/2 R14|BGP: Customer link|
-|R22        |e0/1|192.168.0.22|2001:0:21:22::2                         |-   |R22 e0/1 – e0/1 R21|BGP: Peering link |
-|R22        |e0/2|52.0.0.22 |2001:520:22:23::1                       |-   |R22 e0/2 – e0/0 R23|BGP: Provider link|
-
-
-### Триада (520)
-
-"Ядро" Интернета
-
-|Device Name|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|-----------|----|----------|----------------------------------------|----|------------------|------------------|
-|R23        |e0/0|52.0.0.23 |2001:520:22:23::2                       |-   |R23 e0/0 – e0/2 R22|BGP: Customer link|
-|R23        |e0/1|10.0.1.23 |2001:0:23:25::1                         |-   |R23 e0/1 – e0/0 R25|Connectivity      |
-|R23        |e0/2|10.0.0.23 |2001:0:23:24::1                         |-   |R23 e0/2 – e0/2 R24|Connectivity      |
-|R24        |e0/0|52.0.0.24 |2001:520:21:24::2                       |-   |R24 e0/0 – e0/2 R21|BGP: Customer link|
-|R24        |e0/1|10.0.3.24 |2001:0:24:26::1                         |-   |R24 e0/1 – e0/0 R26|Connectivity      |
-|R24        |e0/2|10.0.0.24 |2001:0:23:24::2                         |-   |R24 e0/2 – e0/2 R23|Connectivity      |
-|R24        |e0/3|52.0.1.24 |2001:520:18:24::2                       |-   |R24 e0/3 – e0/2 R18|BGP: Customer link|
-|R25        |e0/0|10.0.1.25 |2001:0:23:25::2                         |-   |R25 e0/0 – e0/1 R23|Connectivity      |
-|R25        |e0/1|52.0.5.25 |2001:520:25:27::1                       |-   |R25 e0/1 – e0/0 R27|BGP: Customer link|
-|R25        |e0/2|10.0.2.25 |2001:0:25:26::1                         |-   |R25 e0/2 – e0/2 R26|Connectivity      |
-|R25        |e0/3|52.0.4.25 |2001:520:25:28::1                       |-   |R25 e0/3 – e0/1 R28|BGP: Customer link|
-|R26        |e0/0|10.0.3.26 |2001:0:24:26::2                         |-   |R26 e0/0 – e0/1 R24|Connectivity      |
-|R26        |e0/1|52.0.3.26 |2001:520:26:28::1                       |-   |R26 e0/1 – e0/0 R28|BGP: Customer link|
-|R26        |e0/2|10.0.2.26 |2001:0:25:26::2                         |-   |R26 e0/2 – e0/2 R25|Connectivity      |
-|R26        |e0/3|52.0.2.26 |2001:520:18:26::2                       |-   |R26 e0/3 – e0/3 R18|BGP: Customer link|
-
-
-### Лабынтаги (нет номера AS)
-
-Какой-то офис.
-
-|Device Name|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|-----------|----|----------|----------------------------------------|----|------------------|------------------|
-|R27        |e0/0|52.0.5.27 |2001:520:25:27::2                       |-   |R27 e0/0 – e0/1 R25|Default           |
-
-
-### Чокурдах (нет номера AS)
-
-Небольшой творческий офис. Пристанище для дизайнера и фрилансера.
-
-|Device Name|Port|IPv4      |IPv6                                    |VLAN|Link              |Comment           |
-|-----------|----|----------|----------------------------------------|----|------------------|------------------|
-|R28        |e0/0|52.0.3.28 |2001:520:26:28::2                       |-   |R28 e0/0 – e0/1 R26|BGP: Provider link|
-|R28        |e0/1|52.0.4.28 |2001:520:25:28::2                       |-   |R28 e0/1 – e0/3 R25|BGP: Provider link|
-|R28        |e0/2|5.0.0.1   |2001:0:29::1                            |-   |R28 e0/2 – e0/2 SW29|Default (L2)      |
-|SW29       |    |172.16.0.29|                                        |1100|-                 |Management        |
-|SW29       |    |          |                                        |300 |-                 |Freelance (VLAN)  |
-|SW29       |    |          |                                        |310 |-                 |Designer (VLAN)   |
-|VPC30      |eth0|5.0.0.30  |2001:0:29::30                           |300 |VPC30 eth0 – e0/0 SW29|                  |
-|VPC31      |eth0|5.0.0.31  |2001:0:29::31                           |310 |VPC31 eth0 – e0/1 SW29|                  |
-
-
-## Итоговая схема
-
-![ip_design.png](ip_design.png)
-
-
-## Примеры конфигураций
-
-Конфиги [тут](https://github.com/gervold/otus-network-engineer/tree/main/labs/lab04/deploy/configs).
-
-При настройке использовались скрипты для синхронизации EVE-NG конфигов, поэтому можно [посмотреть](https://github.com/gervold/otus-network-engineer/commits) историю изменения для каждого конфига.
-
-Про синхронизацию EVE-NG и git, а так же готовые скрипты [тут](https://github.com/gervold/otus-network-engineer/blob/main/eve-ng/deploy.md).
-
-### Заметки:
-
-#### про принципы построения access layer
-
-<details>
-
-<summary> Читать </summary>
-
-Кусочек сети, между Distribution и Access, имеет некоторые особенности построения,  
-связанные с повышением отказоустойчивости.  
-На схемах ниже L2-коммутаторы это уровень доступа, L3-коммутаторы это уровень распределения.  
-
-**L2 access layer** может быть представлен в 2-х вариантах:
-
-1. **Полный L2** (**STP bassed**).  
-Все линки - транки. Циклы разрываются через STP.  
-![img_1.png](img_1.png)
-
-После обрыва основного линка - сеть перестроится и заблокированные линки начнут работать. Придется немного подождать (см. значения таймаутов в STP). 
-Из достоинств - можно использовать один и тот же VLAN (условно бухгалтерию) в разных зданиях.
-
-2. **L2 с использованием L3-линка**.  
-Разные VLAN-ы. Применяется L3 линк для разрыва цикла.  
-![img.png](img.png)
-
-Нет блокирующихся линков. Более современный подход.
-
-3. **L3 access layer**  
-Можно еще более углубиться в L3 и сделать почти все в L3.  
-![img_2.png](img_2.png)
-
-Этот дизайн используется в ЦОД и крупных сетях.  
-Тут начинает работать ECMP.  
-STP тут не нужен, так как циклов ~~быть не может~~ не должно быть.  
-Нужно маршрутизировать больше сетей, просто L2-свичами не обойдешься.  
-Дороже.
-
-</details>
-
-
-
-#### про организацию L2 связности
-
-<details>
-<summary> Читать </summary>
-
-### Конфигурирование и назначение VLAN
-
-Для внутреннего использования рекомендуется использовать номера VLAN > 1006.
-Об этом говорит запись в конфиге:
+ip routing
+end
 ```
-vlan internal allocation policy ascending
+Spine502
 ```
-В случае использования номера меньше – запись не занесется в `running-config`,
-но будет храниться в специфичном файле `vlan.dat-XXXXX`.
+hostname spine502
 
-Note: можно использовать и descending policy, тогда используемые номера нужно будет отсчитывать вниз от 4096.  
-```
-Layer-3 Catalysts use VLAN id's internally for a few things, one of these is routed interfaces (no switchport). 
-By default the internal allocation policy is ascending - that means it will use VLAN 1006 and upwards for internal usage. 
-If you change this to descending it starts at 4094 and goes down.
-```
-[источник](https://community.cisco.com/t5/network-management/vlan-internal-allocation-policy-ascending-descending/td-p/530198#:~:text=By%20default%20the%20internal%20allocation,at%204094%20and%20goes%20down.)
+aaa authorization exec default local
 
-Для ~~усложнения~~ упрощения конфигурирования (на маленьких сетях) – отключим VTP (VLAN Trunking Protocol):
+interface Ethernet1
+   description ->leaf511
+   no switchport
+   ip address 10.254.16.1/30
 
-```
-SW3#configure terminal
-SW3(config)#vtp mode transparent
-Setting device to VTP Transparent mode for VLANS.
-SW3(config)#end
-```
-
-После этого в `running-config` начнут отображаться все настроенные VLAN:
-```
-SW3#show running-config
-***
-!
-vlan 1000
- name Management
-!
-```
-Note: VTP создан для упрощения конфигурирования сетей с большим количеством устройств и VLAN-ов.  
-VLAN-ы автоматически передаются через коммутаторы (в соответствии с VTP ролью и доменом).  
-Отсюда возникает проблема с безопасностью – если принести новый коммутатор, с кривыми VLAN-ми, то они могут "пролиться" на другие коммутаторы, организовав мусорку. 
-</details>
-
-#### про именование устройств
-<details> 
-
-<summary>Читать</summary>
-
-В данной работе имена устройств уже выданы и зафиксированы, но существуют некоторые соглашения именования устройств (`hostname`).
-
-Примерно такие:
-- Сокращённое название города (msk) + географическое расположение (улица, здание) (arbat) + роль устройства в сети + порядковый номер.
+interface Ethernet2
+   description ->leaf512
+   no switchport
+   ip address 10.254.16.5/30
  
-Тоесть выбираем hostname соответственно роли и месту расположения устройства (потом удобно читать `traceroute`). 
+interface Ethernet3
+   description ->leaf513
+   no switchport
+   ip address 10.254.16.9/30
+  
+interface Ethernet4
+   description ->leaf514
+   no switchport
+   ip address 10.254.16.13/30
+   
+interface Ethernet5
+   description ->leaf515
+   no switchport
+   ip address 10.254.16.17/30
+  
+interface Ethernet6
+   description ->leaf516
+   no switchport
+   ip address 10.254.16.21/30
 
-Например:
-- Маршрутизатор 2811: `msk-arbat-gw1` (**gw**=**GateWay**=шлюз)
-- Коммутатор 2960: `msk-arbat-dsw1` (**dsw**=**Distribution switch**)
-- Коммутаторы 2950: `msk-arbat-aswN`, `msk-rubl-asw1` (**asw**=**Access switch**)
+interface Ethernet7
+   description ->leaf517
+   no switchport
+   ip address 10.254.16.25/30
+
+interface Ethernet8
+   description ->leaf518
+   no switchport
+   ip address 10.254.16.29/30
+
+interface Ethernet9
+   description ->leaf519
+   no switchport
+   ip address 10.254.16.33/30
+
+interface Ethernet10
+   description ->leaf520
+   no switchport
+   ip address 10.254.16.37/30
 
 
-[все тот же СДСМ](https://linkmeup.ru/blog/1188/)
+interface Ethernet11
+   description ->leaf521
+   no switchport
+   ip address 10.254.16.41/30
 
-</details>
+interface Ethernet12
+   description ->leaf522
+   no switchport
+   ip address 10.254.16.45/30
+ 
+interface Loopback0
+   ip address 10.255.5.2/32
+
+ip routing
+
+router bgp 65500
+   router-id 10.255.5.2
+   update wait-install
+   no bgp default ipv4-unicast
+   bgp listen range 10.255.5.0/24 peer-group OVERLAY peer-filter leaf-as-range
+   bgp listen range 10.254.16.0/24 peer-group UNDERLAY peer-filter leaf-as-range
+   neighbor OVERLAY peer group
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 5
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor OVERLAY maximum-routes 1000
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor UNDERLAY maximum-routes 100
+   !
+   address-family evpn
+      neighbor OVERLAY activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.2/32
+
+end
+```
+Leaf511
+```
+hostname leaf511
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.2/30
+   
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.2/30
+   
+interface Loopback0
+   ip address 10.255.5.11/32
+   
+ip routing
+
+router bgp 65511
+   router-id 10.255.5.11
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor default send-community
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor 10.254.15.1 peer group UNDERLAY
+   neighbor 10.254.15.1 description spine501
+   neighbor 10.254.16.1 peer group UNDERLAY
+   neighbor 10.254.16.1 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.11/32
+end
+```
+Leaf512
+```
+hostname leaf512
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.6/30
+
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.6/30
+
+
+interface Loopback0
+   ip address 10.255.5.12/32
+
+ip routing
+router bgp 65512
+   router-id 10.255.5.12
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.5 peer group UNDERLAY
+   neighbor 10.254.15.5 description spine501
+   neighbor 10.254.16.5 peer group UNDERLAY
+   neighbor 10.254.16.5 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+  
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.12/32
+end
+```
+Leaf513
+```
+hostname leaf513
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.10/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.10/30
+
+interface Loopback0
+   ip address 10.255.5.13/32
+
+ip routing
+router bgp 65513
+   router-id 10.255.5.13
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.9 peer group UNDERLAY
+   neighbor 10.254.15.9 description spine501
+   neighbor 10.254.16.9 peer group UNDERLAY
+   neighbor 10.254.16.9 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+ 
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.13/32
+
+end
+```
+Leaf514
+```
+hostname leaf514
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.14/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.14/30
+ 
+interface Loopback0
+   ip address 10.255.5.14/32
+
+ip routing
+router bgp 65514
+   router-id 10.255.5.14
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.13 peer group UNDERLAY
+   neighbor 10.254.15.13 description spine501
+   neighbor 10.254.16.13 peer group UNDERLAY
+   neighbor 10.254.16.13 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.14/32
+
+end
+```
+Leaf515
+```
+hostname leaf515
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.18/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.18/30
+
+interface Loopback0
+   ip address 10.255.5.15/32
+
+ip routing
+
+router bgp 65515
+   router-id 10.255.5.15
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.17 peer group UNDERLAY
+   neighbor 10.254.15.17 description spine501
+   neighbor 10.254.16.17 peer group UNDERLAY
+   neighbor 10.254.16.17 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+  
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.15/32
+
+end
+```
+Leaf516
+```
+hostname leaf516
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.22/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.22/30
+
+interface Loopback0
+   ip address 10.255.5.16/32
+
+ip routing
+
+router bgp 65516
+   router-id 10.255.5.16
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.21 peer group UNDERLAY
+   neighbor 10.254.15.21 description spine501
+   neighbor 10.254.16.21 peer group UNDERLAY
+   neighbor 10.254.16.21 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+ 
+    address-family evpn
+      neighbor OVERLAY activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.16/32
+end
+```
+Leaf517
+```
+hostname leaf517
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.26/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.26/30
+
+interface Loopback0
+   ip address 10.255.5.17/32
+
+ip routing
+router bgp 65517
+   router-id 10.255.5.17
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.25 peer group UNDERLAY
+   neighbor 10.254.15.25 description spine501
+   neighbor 10.254.16.25 peer group UNDERLAY
+   neighbor 10.254.16.25 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+  
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.17/32
+end
+```
+Leaf518
+```
+hostname leaf518
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.30/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.30/30
+
+interface Loopback0
+   ip address 10.255.5.18/32
+
+ip routing
+
+router bgp 65518
+   router-id 10.255.5.18
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.29 peer group UNDERLAY
+   neighbor 10.254.15.29 description spine401
+   neighbor 10.254.16.29 peer group UNDERLAY
+   neighbor 10.254.16.29 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.18/32
+end
+```
+Leaf519
+```
+hostname leaf519
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.34/30
+
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.34/30
+
+interface Loopback0
+   ip address 10.255.5.19/32
+
+ip routing
+router bgp 65519
+   router-id 10.255.5.19
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.33 peer group UNDERLAY
+   neighbor 10.254.15.33 description spine401
+   neighbor 10.254.16.33 peer group UNDERLAY
+   neighbor 10.254.16.33 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.19/32
+end
+```
+Leaf520
+```
+hostname leaf520
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.38/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.38/30
+
+interface Loopback0
+   ip address 10.255.5.20/32
+
+ip routing
+router bgp 65520
+   router-id 10.255.5.20
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.37 peer group UNDERLAY
+   neighbor 10.254.15.37 description spine401
+   neighbor 10.254.16.37 peer group UNDERLAY
+   neighbor 10.254.16.37 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.20/32
+
+end
+```
+Leaf521
+```
+hostname leaf521
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.42/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.42/30
+ 
+interface Loopback0
+   ip address 10.255.5.21/32
+
+ip routing
+router bgp 65521
+   router-id 10.255.5.21
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.41 peer group UNDERLAY
+   neighbor 10.254.15.41 description spine401
+   neighbor 10.254.16.41 peer group UNDERLAY
+   neighbor 10.254.16.41 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+  
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.21/32
+end
+```
+Leaf522
+```
+hostname leaf522
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.46/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.46/30
+
+interface Loopback0
+   ip address 10.255.5.22/32
+ 
+
+ip routing
+
+router bgp 65522
+   router-id 10.255.5.22
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.45 peer group UNDERLAY
+   neighbor 10.254.15.45 description spine501
+   neighbor 10.254.16.45 peer group UNDERLAY
+   neighbor 10.254.16.45 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.22/32
+end
+```   
+### 3. Доступность коммутаторов в underlay и overlay:
+
+``` 
+spine501#show bgp summary 
+BGP summary information for VRF default
+Router identifier 10.255.5.1, local AS number 65500
+Neighbor              AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+------------ ----------- ------------- ----------------------- -------------- ---------- ----------
+10.254.15.2        65511 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.6        65512 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.10       65513 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.14       65514 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.18       65515 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.22       65516 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.26       65517 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.30       65518 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.34       65519 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.38       65520 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.42       65521 Established   IPv4 Unicast            Negotiated              1          1
+10.254.15.46       65522 Established   IPv4 Unicast            Negotiated              1          1
+10.255.5.11        65511 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.12        65512 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.13        65513 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.14        65514 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.15        65515 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.16        65516 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.17        65517 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.18        65518 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.19        65519 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.20        65520 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.21        65521 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.22        65522 Established   L2VPN EVPN              Negotiated              2          2
+
+spine501#show bgp ipv4 unicast 
+BGP routing table information for VRF default
+Router identifier 10.255.5.1, local AS number 65500
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+                    % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >      10.255.5.1/32          -                     -       -          -       0       i
+ * >      10.255.5.11/32         10.254.15.2           0       -          100     0       65511 i
+ * >      10.255.5.12/32         10.254.15.6           0       -          100     0       65512 i
+ * >      10.255.5.13/32         10.254.15.10          0       -          100     0       65513 i
+ * >      10.255.5.14/32         10.254.15.14          0       -          100     0       65514 i
+ * >      10.255.5.15/32         10.254.15.18          0       -          100     0       65515 i
+ * >      10.255.5.16/32         10.254.15.22          0       -          100     0       65516 i
+ * >      10.255.5.17/32         10.254.15.26          0       -          100     0       65517 i
+ * >      10.255.5.18/32         10.254.15.30          0       -          100     0       65518 i
+ * >      10.255.5.19/32         10.254.15.34          0       -          100     0       65519 i
+ * >      10.255.5.20/32         10.254.15.38          0       -          100     0       65520 i
+ * >      10.255.5.21/32         10.254.15.42          0       -          100     0       65521 i
+ * >      10.255.5.22/32         10.254.15.46          0       -          100     0       65522 i
+spine501#show ip route bgp 
+
+VRF: default
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+ B E      10.255.5.11/32 [200/0]
+           via 10.254.15.2, Ethernet1
+ B E      10.255.5.12/32 [200/0]
+           via 10.254.15.6, Ethernet2
+ B E      10.255.5.13/32 [200/0]
+           via 10.254.15.10, Ethernet3
+ B E      10.255.5.14/32 [200/0]
+           via 10.254.15.14, Ethernet4
+ B E      10.255.5.15/32 [200/0]
+           via 10.254.15.18, Ethernet5
+ B E      10.255.5.16/32 [200/0]
+           via 10.254.15.22, Ethernet6
+ B E      10.255.5.17/32 [200/0]
+           via 10.254.15.26, Ethernet7
+ B E      10.255.5.18/32 [200/0]
+           via 10.254.15.30, Ethernet8
+ B E      10.255.5.19/32 [200/0]
+           via 10.254.15.34, Ethernet9
+ B E      10.255.5.20/32 [200/0]
+           via 10.254.15.38, Ethernet10
+ B E      10.255.5.21/32 [200/0]
+           via 10.254.15.42, Ethernet11
+ B E      10.255.5.22/32 [200/0]
+           via 10.254.15.46, Ethernet12
+
+spine501#ping 10.255.5.1
+PING 10.255.5.1 (10.255.5.1) 72(100) bytes of data.
+80 bytes from 10.255.5.1: icmp_seq=1 ttl=64 time=0.909 ms
+80 bytes from 10.255.5.1: icmp_seq=2 ttl=64 time=0.029 ms
+80 bytes from 10.255.5.1: icmp_seq=3 ttl=64 time=0.012 ms
+80 bytes from 10.255.5.1: icmp_seq=4 ttl=64 time=0.011 ms
+80 bytes from 10.255.5.1: icmp_seq=5 ttl=64 time=0.012 ms
+
+--- 10.255.5.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4ms
+rtt min/avg/max/mdev = 0.011/0.194/0.909/0.357 ms, ipg/ewma 1.077/0.539 ms
+spine501#ping 10.255.5.13
+PING 10.255.5.13 (10.255.5.13) 72(100) bytes of data.
+80 bytes from 10.255.5.13: icmp_seq=1 ttl=64 time=3.75 ms
+80 bytes from 10.255.5.13: icmp_seq=2 ttl=64 time=1.39 ms
+80 bytes from 10.255.5.13: icmp_seq=3 ttl=64 time=1.47 ms
+80 bytes from 10.255.5.13: icmp_seq=4 ttl=64 time=1.24 ms
+80 bytes from 10.255.5.13: icmp_seq=5 ttl=64 time=1.64 ms
+
+--- 10.255.5.13 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 13ms
+rtt min/avg/max/mdev = 1.242/1.898/3.750/0.934 ms, ipg/ewma 3.369/2.796 ms
+spine501#ping 10.254.15.29
+PING 10.254.15.29 (10.254.15.29) 72(100) bytes of data.
+80 bytes from 10.254.15.29: icmp_seq=1 ttl=64 time=0.263 ms
+80 bytes from 10.254.15.29: icmp_seq=2 ttl=64 time=0.015 ms
+80 bytes from 10.254.15.29: icmp_seq=3 ttl=64 time=0.013 ms
+80 bytes from 10.254.15.29: icmp_seq=4 ttl=64 time=0.012 ms
+80 bytes from 10.254.15.29: icmp_seq=5 ttl=64 time=0.014 ms
+
+--- 10.254.15.29 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 3ms
+rtt min/avg/max/mdev = 0.012/0.063/0.263/0.099 ms, ipg/ewma 0.687/0.159 ms
+
+leaf511#ping 10.255.5.18 source loopback 0
+PING 10.255.5.18 (10.255.5.18) from 10.255.5.11 : 72(100) bytes of data.
+80 bytes from 10.255.5.18: icmp_seq=1 ttl=63 time=8.42 ms
+80 bytes from 10.255.5.18: icmp_seq=2 ttl=63 time=2.97 ms
+80 bytes from 10.255.5.18: icmp_seq=3 ttl=63 time=2.48 ms
+80 bytes from 10.255.5.18: icmp_seq=4 ttl=63 time=2.57 ms
+80 bytes from 10.255.5.18: icmp_seq=5 ttl=63 time=2.57 ms
+
+--- 10.255.5.18 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 31ms
+rtt min/avg/max/mdev = 2.480/3.801/8.421/2.315 ms, ipg/ewma 7.692/6.024 ms
+
+leaf511#show bgp summary 
+BGP summary information for VRF default
+Router identifier 10.255.5.11, local AS number 65511
+Neighbor             AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+----------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.254.15.1       65500 Established   IPv4 Unicast            Negotiated             12         12
+10.254.16.1       65500 Established   IPv4 Unicast            Negotiated             12         12
+10.255.5.1        65500 Established   L2VPN EVPN              Negotiated             22         22
+10.255.5.2        65500 Established   L2VPN EVPN              Negotiated             22         22
+
+spine502#show bgp summary 
+BGP summary information for VRF default
+Router identifier 10.255.5.2, local AS number 65500
+Neighbor              AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+------------ ----------- ------------- ----------------------- -------------- ---------- ----------
+10.254.16.2        65511 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.6        65512 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.10       65513 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.14       65514 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.18       65515 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.22       65516 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.26       65517 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.30       65518 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.34       65519 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.38       65520 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.42       65521 Established   IPv4 Unicast            Negotiated              1          1
+10.254.16.46       65522 Established   IPv4 Unicast            Negotiated              1          1
+10.255.5.11        65511 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.12        65512 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.13        65513 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.14        65514 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.15        65515 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.16        65516 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.17        65517 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.18        65518 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.19        65519 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.20        65520 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.21        65521 Established   L2VPN EVPN              Negotiated              2          2
+10.255.5.22        65522 Established   L2VPN EVPN              Negotiated              2          2
+
+spine502#show bgp evpn 
+BGP routing table information for VRF default
+Router identifier 10.255.5.2, local AS number 65500
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.255.5.11:101 imet 1010001 10.255.5.11
+                                 10.255.5.11           -       100     0       65511 i
+ * >      RD: 10.255.5.12:101 imet 1010001 10.255.5.12
+                                 10.255.5.12           -       100     0       65512 i
+ * >      RD: 10.255.5.13:101 imet 1010001 10.255.5.13
+                                 10.255.5.13           -       100     0       65513 i
+ * >      RD: 10.255.5.14:101 imet 1010001 10.255.5.14
+                                 10.255.5.14           -       100     0       65514 i
+ * >      RD: 10.255.5.15:101 imet 1010001 10.255.5.15
+                                 10.255.5.15           -       100     0       65515 i
+ * >      RD: 10.255.5.16:101 imet 1010001 10.255.5.16
+                                 10.255.5.16           -       100     0       65516 i
+ * >      RD: 10.255.5.17:101 imet 1010001 10.255.5.17
+                                 10.255.5.17           -       100     0       65517 i
+ * >      RD: 10.255.5.18:101 imet 1010001 10.255.5.18
+                                 10.255.5.18           -       100     0       65518 i
+ * >      RD: 10.255.5.19:101 imet 1010001 10.255.5.19
+                                 10.255.5.19           -       100     0       65519 i
+ * >      RD: 10.255.5.20:101 imet 1010001 10.255.5.20
+                                 10.255.5.20           -       100     0       65520 i
+ * >      RD: 10.255.5.21:101 imet 1010001 10.255.5.21
+                                 10.255.5.21           -       100     0       65521 i
+ * >      RD: 10.255.5.22:101 imet 1010001 10.255.5.22
+                                 10.255.5.22           -       100     0       65522 i
+ * >      RD: 10.255.5.11:101 imet 1010002 10.255.5.11
+                                 10.255.5.11           -       100     0       65511 i
+ * >      RD: 10.255.5.12:101 imet 1010002 10.255.5.12
+                                 10.255.5.12           -       100     0       65512 i
+ * >      RD: 10.255.5.13:101 imet 1010002 10.255.5.13
+                                 10.255.5.13           -       100     0       65513 i
+ * >      RD: 10.255.5.14:101 imet 1010002 10.255.5.14
+                                 10.255.5.14           -       100     0       65514 i
+ * >      RD: 10.255.5.15:101 imet 1010002 10.255.5.15
+                                 10.255.5.15           -       100     0       65515 i
+ * >      RD: 10.255.5.16:101 imet 1010002 10.255.5.16
+                                 10.255.5.16           -       100     0       65516 i
+ * >      RD: 10.255.5.17:101 imet 1010002 10.255.5.17
+                                 10.255.5.17           -       100     0       65517 i
+ * >      RD: 10.255.5.18:101 imet 1010002 10.255.5.18
+                                 10.255.5.18           -       100     0       65518 i
+ * >      RD: 10.255.5.19:101 imet 1010002 10.255.5.19
+                                 10.255.5.19           -       100     0       65519 i
+ * >      RD: 10.255.5.20:101 imet 1010002 10.255.5.20
+                                 10.255.5.20           -       100     0       65520 i
+ * >      RD: 10.255.5.21:101 imet 1010002 10.255.5.21
+                                 10.255.5.21           -       100     0       65521 i
+ * >      RD: 10.255.5.22:101 imet 1010002 10.255.5.22
+                                 10.255.5.22           -       100     0       65522 i
+
+``` 
