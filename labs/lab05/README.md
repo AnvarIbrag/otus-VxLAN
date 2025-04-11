@@ -1,5 +1,5 @@
 ### 1. Топология сети:
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab01/%D0%A1%D1%85%D0%B5%D0%BC%D0%B0.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/VxLAN.JPG)
 
 ### 2.Распределение адресного пространства:
 ### Адреса для интерфейсов Lo overlay:
@@ -1253,3 +1253,7 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.5.22           -       100     0       65522 i
 
 ``` 
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC1.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC2.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC3.JPG)
