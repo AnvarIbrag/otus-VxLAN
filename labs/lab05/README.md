@@ -324,6 +324,8 @@ router bgp 65511
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -387,6 +389,8 @@ router bgp 65512
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -447,6 +451,8 @@ router bgp 65513
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -508,6 +514,8 @@ router bgp 65514
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -571,6 +579,8 @@ router bgp 65515
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -634,6 +644,8 @@ router bgp 65516
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
     address-family evpn
@@ -694,6 +706,8 @@ router bgp 65517
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -755,6 +769,8 @@ router bgp 65518
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -816,6 +832,8 @@ router bgp 65519
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -876,6 +894,8 @@ router bgp 65520
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -937,6 +957,8 @@ router bgp 65521
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -999,6 +1021,8 @@ router bgp 65522
    vlan-aware-bundle lan
       rd 10.255.5.11:101
       route-target both 65500:101
+      redistribute learned
+      redistribute igmp
       vlan 1
 
    address-family evpn
