@@ -325,7 +325,6 @@ router bgp 65511
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -390,7 +389,6 @@ router bgp 65512
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -452,7 +450,6 @@ router bgp 65513
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -515,7 +512,6 @@ router bgp 65514
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -580,7 +576,6 @@ router bgp 65515
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -645,7 +640,6 @@ router bgp 65516
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
     address-family evpn
@@ -707,7 +701,6 @@ router bgp 65517
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -770,7 +763,6 @@ router bgp 65518
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -833,7 +825,6 @@ router bgp 65519
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -895,7 +886,6 @@ router bgp 65520
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -958,7 +948,6 @@ router bgp 65521
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
@@ -1022,7 +1011,6 @@ router bgp 65522
       rd 10.255.5.11:101
       route-target both 65500:101
       redistribute learned
-      redistribute igmp
       vlan 1
 
    address-family evpn
