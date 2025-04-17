@@ -1,5 +1,5 @@
 ### 1. Топология сети:
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/VxLAN.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab06/VxLAN.JPG)
 
 ### 2.Распределение адресного пространства:
 ### Адреса для интерфейсов Lo overlay:
@@ -1395,7 +1395,7 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  -                     -       -       0       i
  * >      RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000 192.168.1.11
                                  -                     -       -       0       i
-                                 
+
 leaf511#show ip route vrf anycast 
 
 VRF: anycast
@@ -1488,7 +1488,7 @@ Gateway of last resort is not set
 
 
 ``` 
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC.JPG)
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC1.JPG)
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC2.JPG)
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab05/PC3.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC1.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC1-1.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC2.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC2-1.JPG)
