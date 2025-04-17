@@ -1489,6 +1489,9 @@ Gateway of last resort is not set
 
 ``` 
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC1.JPG)
+
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC1-1.JPG)
+
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC2.JPG)
+
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/labs/lab06/PC2-1.JPG)
