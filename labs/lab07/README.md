@@ -49,17 +49,17 @@
 |Spine502| Eth12| 10.254.16.45/30| < ---> |Leaf522| Eth50| 10.254.16.46/30|
 
 ### 3. План работ:
-   Необходимо настроить каждого клиента в своем VNI. Настроитm маршрутизацию между клиентами. 
+   Необходимо подключить клиентов 2-я линками к различным Leaf. Настроите агрегированный канал со стороны клиента. 
       
    Для overlay: 
    - соединить по схеме интерфейсы
    - ip адреса должны соответствовать схеме
    - используем ip адреса интерфейсов подключенных к Spine добавляем их в eBGP
    - настроить на двух пк разные подсети и привязать их в разные vlan
-   - настроить порты к которым подключены ПК в access с указанием нужных vlan
-   - проверить, что первоначально два пк не видят друг друга в сети
-   - настроить anycast gateway
-   - проверить доступность пк между собой после настройки маршрутизации на Leaf
+   - настроить channel-group на портах к которым подключены ПК 
+   - настроить channel-group ESI-LAG
+   - проверить работу агрегации и проверить доступность хостов в сети
+   
 
 Конфигурации устройств:
 ```
@@ -366,6 +366,16 @@ Leaf512
 ```
 hostname leaf512
 
+interface Port-Channel3
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1413
+      route-target import 00:00:00:00:14:13
+   lacp system-id 0000.0000.1413
+
 vlan 2
    name externel
 
@@ -373,6 +383,9 @@ vlan 3
    name internal   
 
 vrf instance anycast
+
+interface Ethernet12
+   channel-group 3 mode active
 
 interface Ethernet49
    description -> spine501
@@ -460,6 +473,16 @@ Leaf513
 ```
 hostname leaf513
 
+interface Port-Channel3
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1413
+      route-target import 00:00:00:00:14:13
+   lacp system-id 0000.0000.1413
+
 vlan 2
    name externel
 
@@ -467,6 +490,9 @@ vlan 3
    name internal   
 
 vrf instance anycast
+
+interface Ethernet12
+   channel-group 3 mode active
 
 interface Ethernet49
    description -> spine501
@@ -1114,6 +1140,19 @@ vlan 3
 
 vrf instance anycast
 
+interface Port-Channel1
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1412
+      route-target import 00:00:00:00:14:12
+   lacp system-id 0000.0000.1412
+
+interface Ethernet12
+   channel-group 1 mode active
+
 interface Ethernet49
    description -> spine501
    no switchport
@@ -1204,6 +1243,19 @@ vlan 3
    name internal   
 
 vrf instance anycast
+
+interface Port-Channel1
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1412
+      route-target import 00:00:00:00:14:12
+   lacp system-id 0000.0000.1412
+
+interface Ethernet12
+   channel-group 1 mode active
 
 interface Ethernet49
    description -> spine501
@@ -1375,117 +1427,266 @@ router bgp 65522
 
 end
 ```   
-### 3. Доступность пк в разных VNI:
+### 3. Доступность пк с ESI-LAG:
 
 ``` 
-show arp vrf anycast 
-Address         Age (sec)  Hardware Addr   Interface
-192.168.1.11      0:01:59  5000.0058.0000  Vlan2, Ethernet12
-
-leaf511#show bgp evpn route-type mac-ip 5000.0058.0000 
+leaf520#show bgp evpn route-type ethernet-segment 
 BGP routing table information for VRF default
-Router identifier 10.255.5.11, local AS number 65511
+Router identifier 10.255.5.20, local AS number 65520
 Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
                     c - Contributing to ECMP, % - Pending best path selection
 Origin codes: i - IGP, e - EGP, ? - incomplete
 AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
           Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000
+ * >      RD: 10.255.5.20:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.20
                                  -                     -       -       0       i
- * >      RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000 192.168.1.11
-                                 -                     -       -       0       i
+ * >Ec    RD: 10.255.5.12:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.12
+                                 10.255.5.12           -       100     0       65500 65512 i
+ *  ec    RD: 10.255.5.12:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.12
+                                 10.255.5.12           -       100     0       65500 65512 i
+ * >Ec    RD: 10.255.5.13:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.13
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.13
+                                 10.255.5.13           -       100     0       65500 65513 i
 
-leaf511#show ip route vrf anycast 
-
-VRF: anycast
-Source Codes:
-       C - connected, S - static, K - kernel,
-       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
-       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
-       N2 - OSPF NSSA external type2, B - Other BGP Routes,
-       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
-       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
-       A O - OSPF Summary, NG - Nexthop Group Static Route,
-       V - VXLAN Control Service, M - Martian,
-       DH - DHCP client installed default route,
-       DP - Dynamic Policy Route, L - VRF Leaked,
-       G  - gRIBI, RC - Route Cache Route,
-       CL - CBF Leaked Route
-
-Gateway of last resort is not set
-
- B E      192.168.0.0/24 [200/0]
-           via VTEP 10.255.5.17 VNI 2550002 router-mac 50:00:00:1f:f7:8f local-interface Vxlan1
- C        192.168.1.0/24
-           directly connected, Vlan2
-
-leaf517#show mac address-table dynamic 
-          Mac Address Table
-------------------------------------------------------------------
-
-Vlan    Mac Address       Type        Ports      Moves   Last Move
-----    -----------       ----        -----      -----   ---------
-   2    5000.0058.0000    DYNAMIC     Vx1        1       0:00:48 ago
-   3    5000.005f.0000    DYNAMIC     Vx1        1       0:00:04 ago
-Total Mac Addresses for this criterion: 2
-
-          Multicast Mac Address Table
-------------------------------------------------------------------
-
-Vlan    Mac Address       Type        Ports
-----    -----------       ----        -----
-Total Mac Addresses for this criterion: 0
-
-leaf517#show arp vrf anycast 
-Address         Age (sec)  Hardware Addr   Interface
-192.168.1.11            -  5000.0058.0000  Vlan2, Vxlan1
-192.168.0.12      3:28:53  5000.005f.0000  Vlan3, Vxlan1
-192.168.0.13      0:07:04  5000.0001.0000  Vlan3, Ethernet13
-
-leaf517#show bgp evpn route-type mac-ip 5000.0058.0000
+leaf520#show bgp evpn route-type auto-discovery detail 
 BGP routing table information for VRF default
-Router identifier 10.255.5.17, local AS number 65517
+Router identifier 10.255.5.20, local AS number 65520
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1412, Route Distinguisher: 10.255.5.20:101
+ Paths: 1 available
+  Local
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref -, weight 0, tag 0, valid, local, best
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1412, Route Distinguisher: 10.255.5.20:1
+ Paths: 1 available, Priority: high
+  Local
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref -, weight 0, tag 0, valid, local, best
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.12:101
+ Paths: 2 available
+  65500 65512
+    10.255.5.12 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+  65500 65512
+    10.255.5.12 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.13:101
+ Paths: 2 available
+  65500 65513
+    10.255.5.13 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+  65500 65513
+    10.255.5.13 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.12:1
+ Paths: 2 available, Priority: high
+  65500 65512
+    10.255.5.12 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+  65500 65512
+    10.255.5.12 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.13:1
+ Paths: 2 available, Priority: high
+  65500 65513
+    10.255.5.13 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+  65500 65513
+    10.255.5.13 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+
+leaf521#show bgp evpn route-type ethernet-segment 
+BGP routing table information for VRF default
+Router identifier 10.255.5.21, local AS number 65521
 Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
                     c - Contributing to ECMP, % - Pending best path selection
 Origin codes: i - IGP, e - EGP, ? - incomplete
 AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
           Network                Next Hop              Metric  LocPref Weight  Path
- * >Ec    RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000
-                                 10.255.5.11           -       100     0       65500 65511 i
- *  ec    RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000
-                                 10.255.5.11           -       100     0       65500 65511 i
- * >Ec    RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000 192.168.1.11
-                                 10.255.5.11           -       100     0       65500 65511 i
- *  ec    RD: 10.255.5.11:101 mac-ip 1010002 5000.0058.0000 192.168.1.11
-                                 10.255.5.11           -       100     0       65500 65511 i
-leaf517#show ip route vrf anycast 
+ * >Ec    RD: 10.255.5.20:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.20
+                                 10.255.5.20           -       100     0       65500 65520 i
+ *  ec    RD: 10.255.5.20:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.20
+                                 10.255.5.20           -       100     0       65500 65520 i
+ * >Ec    RD: 10.255.5.12:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.12
+                                 10.255.5.12           -       100     0       65500 65512 i
+ *  ec    RD: 10.255.5.12:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.12
+                                 10.255.5.12           -       100     0       65500 65512 i
+ * >Ec    RD: 10.255.5.13:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.13
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.13
+                                 10.255.5.13           -       100     0       65500 65513 i
 
-VRF: anycast
-Source Codes:
-       C - connected, S - static, K - kernel,
-       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
-       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
-       N2 - OSPF NSSA external type2, B - Other BGP Routes,
-       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
-       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
-       A O - OSPF Summary, NG - Nexthop Group Static Route,
-       V - VXLAN Control Service, M - Martian,
-       DH - DHCP client installed default route,
-       DP - Dynamic Policy Route, L - VRF Leaked,
-       G  - gRIBI, RC - Route Cache Route,
-       CL - CBF Leaked Route
+leaf521#show bgp evpn route-type auto-discovery detail 
+BGP routing table information for VRF default
+Router identifier 10.255.5.21, local AS number 65521
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1412, Route Distinguisher: 10.255.5.20:101
+ Paths: 2 available
+  65500 65520
+    10.255.5.20 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+  65500 65520
+    10.255.5.20 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1412, Route Distinguisher: 10.255.5.21:101
+ Paths: 1 available
+  Local
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref -, weight 0, tag 0, valid, local, best
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1412, Route Distinguisher: 10.255.5.20:1
+ Paths: 2 available, Priority: high
+  65500 65520
+    10.255.5.20 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+  65500 65520
+    10.255.5.20 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1412, Route Distinguisher: 10.255.5.21:1
+ Paths: 1 available, Priority: high
+  Local
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref -, weight 0, tag 0, valid, local, best
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.12:101
+ Paths: 2 available
+  65500 65512
+    10.255.5.12 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+  65500 65512
+    10.255.5.12 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 1010002 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.13:101
+ Paths: 2 available
+  65500 65513
+    10.255.5.13 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+  65500 65513
+    10.255.5.13 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan
+      VNI: 1010002
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.12:1
+ Paths: 2 available, Priority: high
+  65500 65512
+    10.255.5.12 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+  65500 65512
+    10.255.5.12 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+BGP routing table entry for auto-discovery 0000:0000:0000:0000:1413, Route Distinguisher: 10.255.5.13:1
+ Paths: 2 available, Priority: high
+  65500 65513
+    10.255.5.13 from 10.255.5.2 (10.255.5.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
+  65500 65513
+    10.255.5.13 from 10.255.5.1 (10.255.5.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:65500:101 TunnelEncap:tunnelTypeVxlan EvpnEsiLabel:0
+      VNI: 0
 
-Gateway of last resort is not set
+leaf512#show bgp evpn route-type ethernet-segment 
+BGP routing table information for VRF default
+Router identifier 10.255.5.12, local AS number 65512
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
- C        192.168.0.0/24
-           directly connected, Vlan3
- B E      192.168.1.11/32 [200/0]
-           via VTEP 10.255.5.11 VNI 2550002 router-mac 50:00:00:d9:60:88 local-interface Vxlan1
- C        192.168.1.0/24
-           directly connected, Vlan2
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 10.255.5.20:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.20
+                                 10.255.5.20           -       100     0       65500 65520 i
+ *  ec    RD: 10.255.5.20:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.20
+                                 10.255.5.20           -       100     0       65500 65520 i
+ * >Ec    RD: 10.255.5.21:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.21
+                                 10.255.5.21           -       100     0       65500 65521 i
+ *  ec    RD: 10.255.5.21:1 ethernet-segment 0000:0000:0000:0000:1412 10.255.5.21
+                                 10.255.5.21           -       100     0       65500 65521 i
+ * >      RD: 10.255.5.12:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.12
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.255.5.13:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.13
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:1 ethernet-segment 0000:0000:0000:0000:1413 10.255.5.13
+                                 10.255.5.13           -       100     0       65500 65513 i
 
+leaf512#show bgp evpn route-type auto-discovery 
+BGP routing table information for VRF default
+Router identifier 10.255.5.12, local AS number 65512
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 10.255.5.20:101 auto-discovery 1010002 0000:0000:0000:0000:1412
+                                 10.255.5.20           -       100     0       65500 65520 i
+ *  ec    RD: 10.255.5.20:101 auto-discovery 1010002 0000:0000:0000:0000:1412
+                                 10.255.5.20           -       100     0       65500 65520 i
+ * >Ec    RD: 10.255.5.21:101 auto-discovery 1010002 0000:0000:0000:0000:1412
+                                 10.255.5.21           -       100     0       65500 65521 i
+ *  ec    RD: 10.255.5.21:101 auto-discovery 1010002 0000:0000:0000:0000:1412
+                                 10.255.5.21           -       100     0       65500 65521 i
+ * >Ec    RD: 10.255.5.20:1 auto-discovery 0000:0000:0000:0000:1412
+                                 10.255.5.20           -       100     0       65500 65520 i
+ *  ec    RD: 10.255.5.20:1 auto-discovery 0000:0000:0000:0000:1412
+                                 10.255.5.20           -       100     0       65500 65520 i
+ * >Ec    RD: 10.255.5.21:1 auto-discovery 0000:0000:0000:0000:1412
+                                 10.255.5.21           -       100     0       65500 65521 i
+ *  ec    RD: 10.255.5.21:1 auto-discovery 0000:0000:0000:0000:1412
+                                 10.255.5.21           -       100     0       65500 65521 i
+ * >      RD: 10.255.5.12:101 auto-discovery 1010002 0000:0000:0000:0000:1413
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.255.5.13:101 auto-discovery 1010002 0000:0000:0000:0000:1413
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:101 auto-discovery 1010002 0000:0000:0000:0000:1413
+                                 10.255.5.13           -       100     0       65500 65513 i
+ * >      RD: 10.255.5.12:1 auto-discovery 0000:0000:0000:0000:1413
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.255.5.13:1 auto-discovery 0000:0000:0000:0000:1413
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:1 auto-discovery 0000:0000:0000:0000:1413
+                                 10.255.5.13           -       100     0       65500 65513 i
 
 ``` 
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab06/PC1.JPG)
