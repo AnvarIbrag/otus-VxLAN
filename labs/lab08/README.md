@@ -1,5 +1,5 @@
 ### 1. Топология сети:
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab07/VxLAN.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/VxLAN1.png)
 
 ### 2.Распределение адресного пространства:
 ### Адреса для интерфейсов Lo overlay:
@@ -49,7 +49,7 @@
 |Spine502| Eth12| 10.254.16.45/30| < ---> |Leaf522| Eth50| 10.254.16.46/30|
 
 ### 3. План работ:
-   Необходимо разместить двух "клиентов" в разных VRF в рамках одной фабрики. Настроите маршрутизацию между клиентами через внешнее устройство (граничный роутер\фаерволл\etc). 
+   Необходимо разместить двух "клиентов" в разных VRF в рамках одной фабрики. Настроите маршрутизацию между клиентами через внешнее устройство (граничный роутер\фаерволл\etc). Будем настраивать новый vrf на Leaf516 и соединение маршрутизатора с фабрикой на Leaf518.
       
    Для overlay: 
    - соединить по схеме интерфейсы
@@ -1695,10 +1695,11 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.5.15           -       100     0       65500 65515 i
 
 ``` 
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab07/1.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/Mikrotik.png)
 
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab07/2.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1.png)
 
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab07/3.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC2.png)
 
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab07/4.JPG)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC3.png)
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/tracert.png)
