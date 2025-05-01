@@ -1779,3 +1779,5 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1_anycast.JPG)
 
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC2.JPG)
+
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1_anycast2.JPG)
