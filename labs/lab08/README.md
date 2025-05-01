@@ -49,7 +49,7 @@
 |Spine502| Eth12| 10.254.16.45/30| < ---> |Leaf522| Eth50| 10.254.16.46/30|
 
 ### 3. План работ:
-   Необходимо разместить двух "клиентов" в разных VRF в рамках одной фабрики. Настроите маршрутизацию между клиентами через внешнее устройство (граничный роутер\фаерволл\etc). Будем настраивать новый vrf на Leaf516 и соединение маршрутизатора с фабрикой на Leaf518.
+   Необходимо разместить двух "клиентов" в разных VRF в рамках одной фабрики. Настроите маршрутизацию между клиентами через внешнее устройство (граничный роутер\фаерволл\etc). 
       
    Для overlay: 
    - соединить по схеме интерфейсы
@@ -58,8 +58,12 @@
    - настроить на двух пк разные подсети и привязать их в разные vlan
    - настроить новую vrf
    - создать новый vlan
-   - настроить дополнительный lo
-   - добавить новые интерфейсы в vxlan
+   - добавить внешнее устрово маршрутизацции
+   - подключить его к Leaf518
+   - создать на leaf518 два новых vlan (под каждыую vrf в vxlan), добавить адресацию из подсети /29, привязать новые vlan к интерфейсам
+   - на маршрутизируемом уст-ве провести аналогичные leaf518 настройки
+   - на leaf 518 и "маршрутизаторе" настраиваем сессии gbp и снимаем ограничения на транслирование маршррутов с собственной AS.
+   - проверяем маршрутизацию между vrf.
    
    
 
@@ -875,7 +879,6 @@ router bgp 65516
       rd 10.255.5.16:25501
       route-target import evpn 65500:25501
       route-target export evpn 65500:25501
-      network 10.0.0.0/30
       network 10.5.0.0/24
       network 10.255.5.16/32
 
@@ -983,22 +986,60 @@ vlan 2
    name externel
 
 vlan 3
-   name internal   
+   name internel
+   
+vlan 200
 
-vlan 4
+vlan 300
 
 vrf instance anycast
+
 vrf instance servers
 
+interface Ethernet11
+   no switchport
+
+interface Ethernet11.200
+   encapsulation dot1q vlan 200
+   vrf servers
+   ip address 10.250.50.2/29
+
+interface Ethernet11.300
+   encapsulation dot1q vlan 300
+   vrf anycast
+   ip address 10.250.60.2/29
+
 interface Ethernet49
-   description -> spine501
+   description -> spine401
    no switchport
    ip address 10.254.15.30/30
 
 interface Ethernet50
-   description spine502
+   description spine402
    no switchport
    ip address 10.254.16.30/30
+
+interface Loopback0
+   ip address 10.255.5.18/32
+
+interface Loopback1
+   vrf servers
+   ip address 10.255.5.18/32
+
+interface Management1
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+
+interface Vlan3
+   description internal
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vlan4
+   vrf servers
+   ip address virtual 10.5.0.1/24
 
 interface Vxlan1
    vxlan source-interface Loopback0
@@ -1008,25 +1049,6 @@ interface Vxlan1
    vxlan vlan 4 vni 2550004
    vxlan vrf anycast vni 2550002
    vxlan vrf servers vni 2550001
-
-interface Loopback0
-   ip address 10.255.5.18/32
-
-interface Loopback1
-   vrf servers
-   ip address 10.255.5.18/32
-
-interface Vlan2
-   vrf anycast
-   ip address virtual 192.168.1.1/24
-   
-interface Vlan3
-   vrf anycast
-   ip address virtual 192.168.0.1/24
-
-interface Vlan4
-   vrf servers
-   ip address virtual 10.0.0.1/30
 
 ip virtual-router mac-address 00:00:00:00:00:01
 
@@ -1062,34 +1084,45 @@ router bgp 65518
       rd 10.255.5.18:25504
       route-target both 65500:25504
       redistribute learned
-   
+
    vlan-aware-bundle lan
-      rd 10.255.5.11:101
+      rd 10.255.5.18:101
       route-target both 65500:101
       redistribute learned
+      redistribute igmp
       vlan 2-3
 
    address-family evpn
       neighbor OVERLAY activate
-   
+
    address-family ipv4
       neighbor UNDERLAY activate
       network 10.255.5.18/32
 
    vrf anycast
-      rd 10.255.5.11:25502
+      rd 10.255.5.18:25502
       route-target import evpn 65500:25502
       route-target export evpn 65500:25502
-      network 192.168.0.0/24
-      network 192.168.1.0/24
+      neighbor 10.250.60.1 remote-as 65530
+      neighbor 10.250.60.1 allowas-in 10
+      !
+      address-family ipv4
+         neighbor 10.250.60.1 activate
+         network 192.168.0.0/24
+         network 192.168.1.0/24
 
    vrf servers
       rd 10.255.5.18:25501
       route-target import evpn 65500:25501
       route-target export evpn 65500:25501
-      network 10.0.0.0/30
-      network 10.5.0.0/24
-      network 10.255.5.18/32
+      no bgp default ipv4-unicast
+      neighbor 10.250.50.1 remote-as 65530
+      neighbor 10.250.50.1 allowas-in 10
+      neighbor 10.250.50.1 send-community
+      !
+      address-family ipv4
+         neighbor 10.250.50.1 activate
+         network 10.255.5.18/32
 
 end
 ```
@@ -1484,159 +1517,223 @@ router bgp 65522
 
 end
 ```   
+R1
+```
+hostname R1
+
+spanning-tree mode mstp
+no spanning-tree vlan-id 1-4094
+
+vlan 200,300
+
+interface Ethernet1
+   switchport trunk allowed vlan 200,300
+   switchport mode trunk
+
+interface Ethernet2
+   switchport trunk allowed vlan 200,300
+   switchport mode trunk
+
+interface Loopback1
+   ip address 1.1.1.1/32
+
+interface Management1
+
+interface Vlan200
+   ip address 10.250.50.1/29
+
+interface Vlan300
+   ip address 10.250.60.1/29
+
+ip routing
+
+ip as-path regex-mode string
+ip as-path access-list allow-any permit .* any
+
+route-map allow-loop permit 10
+   match as-path allow-any
+
+router bgp 65530
+   router-id 10.250.50.1
+   neighbor 10.250.50.2 remote-as 65518
+   neighbor 10.250.50.2 remove-private-as all replace-as
+   neighbor 10.250.50.2 route-map allow-loop out
+   neighbor 10.250.50.3 remote-as 65519
+   neighbor 10.250.50.3 shutdown
+   neighbor 10.250.50.3 remove-private-as all replace-as
+   neighbor 10.250.50.3 route-map allow-loop out
+   neighbor 10.250.60.2 remote-as 65518
+   neighbor 10.250.60.2 remove-private-as all replace-as
+   neighbor 10.250.60.2 route-map allow-loop out
+   neighbor 10.250.60.3 remote-as 65519
+   neighbor 10.250.60.3 shutdown
+   neighbor 10.250.60.3 remove-private-as all replace-as
+   neighbor 10.250.60.3 route-map allow-loop out
+   network 1.1.1.1/32
+
+end
+```   
+
 ### 3. Доступность пк в разных vrf:
 
 ``` 
-leaf516#show arp vrf servers 
-Address         Age (sec)  Hardware Addr   Interface
-10.0.0.2                -  5000.0052.0000  Vlan4, Vxlan1
-leaf516#show arp vrf anycast 
-Address         Age (sec)  Hardware Addr   Interface
-192.168.1.68      3:23:55  5000.005a.0001  Vlan2, not learned
-192.168.1.69            -  5000.0033.0001  Vlan2, Vxlan1
-192.168.0.68            -  5000.0058.0000  Vlan3, Vxlan1
-192.168.0.69      3:18:21  5000.005f.0000  Vlan3, Vxlan1
-192.168.0.100           -  5000.0052.0000  Vlan3, Vxlan1
-leaf516#show mac address-table vlan 4
-          Mac Address Table
-------------------------------------------------------------------
+lleaf511#show ip route vrf anycast 
 
-Vlan    Mac Address       Type        Ports      Moves   Last Move
-----    -----------       ----        -----      -----   ---------
-   4    0000.0000.0001    STATIC      Cpu
-   4    5000.0001.0001    DYNAMIC     Vx1        1       0:01:17 ago
-   4    5000.002b.0000    DYNAMIC     Et13       1       0:04:20 ago
-   4    5000.0052.0000    DYNAMIC     Vx1        1       1 day, 0:52:41 ago
-Total Mac Addresses for this criterion: 4
+VRF: anycast
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
 
-          Multicast Mac Address Table
-------------------------------------------------------------------
+Gateway of last resort is not set
 
-Vlan    Mac Address       Type        Ports
-----    -----------       ----        -----
-Total Mac Addresses for this criterion: 0
-
-leaf516#show mac address-table dynamic 
-          Mac Address Table
-------------------------------------------------------------------
-
-Vlan    Mac Address       Type        Ports      Moves   Last Move
-----    -----------       ----        -----      -----   ---------
-   2    5000.0033.0001    DYNAMIC     Vx1        1       0:01:33 ago
-   2    5000.0052.0000    DYNAMIC     Vx1        1       1 day, 0:53:08 ago
-   3    5000.0052.0000    DYNAMIC     Vx1        1       1 day, 0:53:06 ago
-   3    5000.0058.0000    DYNAMIC     Vx1        1       0:02:21 ago
-   3    5000.005f.0000    DYNAMIC     Vx1        1       0:05:13 ago
-   4    5000.0001.0001    DYNAMIC     Vx1        1       0:01:39 ago
-   4    5000.002b.0000    DYNAMIC     Et13       1       0:04:43 ago
-   4    5000.0052.0000    DYNAMIC     Vx1        1       1 day, 0:53:04 ago
-Total Mac Addresses for this criterion: 8
-
-          Multicast Mac Address Table
-------------------------------------------------------------------
-
-Vlan    Mac Address       Type        Ports
-----    -----------       ----        -----
-Total Mac Addresses for this criterion: 0
-leaf516#show bgp evpn route-type mac-ip 
-BGP routing table information for VRF default
-Router identifier 10.255.5.16, local AS number 65516
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending best path selection
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >Ec    RD: 10.255.5.18:25504 mac-ip 5000.0001.0001
-                                 10.255.5.18           -       100     0       65500 65518 i
- *  ec    RD: 10.255.5.18:25504 mac-ip 5000.0001.0001
-                                 10.255.5.18           -       100     0       65500 65518 i
- * >      RD: 10.255.5.16:25504 mac-ip 5000.002b.0000
-                                 -                     -       -       0       i
- * >Ec    RD: 10.255.5.18:25504 mac-ip 5000.0052.0000
-                                 10.255.5.18           -       100     0       65500 65518 i
- *  ec    RD: 10.255.5.18:25504 mac-ip 5000.0052.0000
-                                 10.255.5.18           -       100     0       65500 65518 i
- * >Ec    RD: 10.255.5.18:25504 mac-ip 5000.0052.0000 10.0.0.2
-                                 10.255.5.18           -       100     0       65500 65518 i
- *  ec    RD: 10.255.5.18:25504 mac-ip 5000.0052.0000 10.0.0.2
-                                 10.255.5.18           -       100     0       65500 65518 i
- * >Ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001
-                                 10.255.5.13           -       100     0       65500 65513 i
- *  ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001
-                                 10.255.5.13           -       100     0       65500 65513 i
- * >Ec    RD: 10.255.5.12:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
-                                 10.255.5.12           -       100     0       65500 65512 i
- *  ec    RD: 10.255.5.12:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
-                                 10.255.5.12           -       100     0       65500 65512 i
- * >Ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
-                                 10.255.5.13           -       100     0       65500 65513 i
- *  ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
-                                 10.255.5.13           -       100     0       65500 65513 i
- * >Ec    RD: 10.255.5.18:101 mac-ip 1010002 5000.0052.0000
-                                 10.255.5.18           -       100     0       65500 65518 i
- *  ec    RD: 10.255.5.18:101 mac-ip 1010002 5000.0052.0000
-                                 10.255.5.18           -       100     0       65500 65518 i
- * >Ec    RD: 10.255.5.18:101 mac-ip 1010003 5000.0052.0000
-                                 10.255.5.18           -       100     0       65500 65518 i
- *  ec    RD: 10.255.5.18:101 mac-ip 1010003 5000.0052.0000
-                                 10.255.5.18           -       100     0       65500 65518 i
- * >Ec    RD: 10.255.5.18:101 mac-ip 1010003 5000.0052.0000 192.168.0.100
-                                 10.255.5.18           -       100     0       65500 65518 i
- *  ec    RD: 10.255.5.18:101 mac-ip 1010003 5000.0052.0000 192.168.0.100
-                                 10.255.5.18           -       100     0       65500 65518 i
- * >Ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000
-                                 10.255.5.11           -       100     0       65500 65511 i
- *  ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000
-                                 10.255.5.11           -       100     0       65500 65511 i
- * >Ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000 192.168.0.68
-                                 10.255.5.11           -       100     0       65500 65511 i
- *  ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000 192.168.0.68
-                                 10.255.5.11           -       100     0       65500 65511 i
- * >Ec    RD: 10.255.5.15:101 mac-ip 1010003 5000.005f.0000
-                                 10.255.5.15           -       100     0       65500 65515 i
- *  ec    RD: 10.255.5.15:101 mac-ip 1010003 5000.005f.0000
-                                 10.255.5.15           -       100     0       65500 65515 i
+ B E      1.1.1.1/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.49/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.16/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.18/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.19/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ C        192.168.0.0/24
+           directly connected, Vlan3
+ B E      192.168.1.69/32 [200/0]
+           via VTEP 10.255.5.12 VNI 2550002 router-mac 50:00:00:ca:26:23 local-interface Vxlan1
+           via VTEP 10.255.5.13 VNI 2550002 router-mac 50:00:00:9d:e9:64 local-interface Vxlan1
+ C        192.168.1.0/24
+           directly connected, Vlan2
 
 
+leaf516#show ip route vrf anycast 
 
-leaf518#show arp vrf servers
-Address         Age (sec)  Hardware Addr   Interface
-10.0.0.2          0:01:27  5000.0052.0000  Vlan4, Ethernet15
-leaf518#show arp vrf anycast 
-Address         Age (sec)  Hardware Addr   Interface
-192.168.1.68      3:28:39  5000.005a.0001  Vlan2, Vxlan1
-192.168.1.69            -  5000.0033.0001  Vlan2, Vxlan1
-192.168.0.68            -  5000.0058.0000  Vlan3, Vxlan1
-192.168.0.69      0:03:09  5000.005f.0000  Vlan3, Vxlan1
-192.168.0.100     2:51:12  5000.0052.0000  Vlan3, Ethernet15
-leaf518#show mac address-table dynamic
-          Mac Address Table
-------------------------------------------------------------------
+VRF: anycast
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
 
-Vlan    Mac Address       Type        Ports      Moves   Last Move
-----    -----------       ----        -----      -----   ---------
-   2    5000.0033.0001    DYNAMIC     Vx1        1       0:04:57 ago
-   2    5000.0052.0000    DYNAMIC     Et15       1       1 day, 0:56:32 ago
-   2    5000.005a.0001    DYNAMIC     Vx1        1       0:01:34 ago
-   3    5000.0052.0000    DYNAMIC     Et15       1       1 day, 0:56:30 ago
-   3    5000.0058.0000    DYNAMIC     Vx1        1       0:05:45 ago
-   3    5000.005f.0000    DYNAMIC     Vx1        1       0:08:37 ago
-   4    5000.0001.0001    DYNAMIC     Et15       1       0:05:03 ago
-   4    5000.002b.0000    DYNAMIC     Vx1        1       0:08:06 ago
-   4    5000.0052.0000    DYNAMIC     Et15       1       1 day, 0:56:28 ago
-4094    5000.0029.5cf6    DYNAMIC     Vx1        1       1 day, 3:30:59 ago
-4094    5000.00bf.7e4d    DYNAMIC     Vx1        1       1 day, 3:14:58 ago
-Total Mac Addresses for this criterion: 11
+Gateway of last resort is not set
 
-          Multicast Mac Address Table
-------------------------------------------------------------------
+ B E      1.1.1.1/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.49/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.16/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.18/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.19/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.0.68/32 [200/0]
+           via VTEP 10.255.5.11 VNI 2550002 router-mac 50:00:00:d9:60:88 local-interface Vxlan1
+ C        192.168.0.0/24
+           directly connected, Vlan3
+ B E      192.168.1.69/32 [200/0]
+           via VTEP 10.255.5.12 VNI 2550002 router-mac 50:00:00:ca:26:23 local-interface Vxlan1
+           via VTEP 10.255.5.13 VNI 2550002 router-mac 50:00:00:9d:e9:64 local-interface Vxlan1
+ C        192.168.1.0/24
+           directly connected, Vlan2
 
-Vlan    Mac Address       Type        Ports
-----    -----------       ----        -----
-Total Mac Addresses for this criterion: 0
+leaf516#show ip route vrf servers 
 
-leaf518#show bgp evpn route-type mac-ip
+VRF: servers
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort is not set
+
+ B E      1.1.1.1/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ C        10.5.0.0/24
+           directly connected, Vlan4
+ C        10.255.5.16/32
+           directly connected, Loopback1
+ B E      10.255.5.18/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.19/32 [200/0]
+           via VTEP 10.255.5.19 VNI 2550001 router-mac 50:00:00:29:5c:f6 local-interface Vxlan1
+ B E      192.168.0.68/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.0.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.1.69/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.1.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+
+
+R1#show ip route bgp 
+
+VRF: default
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+ B E      10.5.0.49/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.5.0.0/24 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.255.5.16/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.255.5.18/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.255.5.19/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      192.168.0.68/32 [200/0]
+           via 10.250.60.2, Vlan300
+ B E      192.168.0.0/24 [200/0]
+           via 10.250.60.2, Vlan300
+ B E      192.168.1.69/32 [200/0]
+           via 10.250.60.2, Vlan300
+ B E      192.168.1.0/24 [200/0]
+           via 10.250.60.2, Vlan300
+
+leaf518#show bgp evpn route-type mac-ip 
 BGP routing table information for VRF default
 Router identifier 10.255.5.18, local AS number 65518
 Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
@@ -1645,20 +1742,14 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
           Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 10.255.5.18:25504 mac-ip 5000.0001.0001
-                                 -                     -       -       0       i
  * >Ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000
                                  10.255.5.16           -       100     0       65500 65516 i
  *  ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000
                                  10.255.5.16           -       100     0       65500 65516 i
- * >      RD: 10.255.5.18:25504 mac-ip 5000.0052.0000
-                                 -                     -       -       0       i
- * >      RD: 10.255.5.18:25504 mac-ip 5000.0052.0000 10.0.0.2
-                                 -                     -       -       0       i
- * >Ec    RD: 10.255.5.12:101 mac-ip 1010002 5000.0033.0001
-                                 10.255.5.12           -       100     0       65500 65512 i
- *  ec    RD: 10.255.5.12:101 mac-ip 1010002 5000.0033.0001
-                                 10.255.5.12           -       100     0       65500 65512 i
+ * >Ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000 10.5.0.49
+                                 10.255.5.16           -       100     0       65500 65516 i
+ *  ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000 10.5.0.49
+                                 10.255.5.16           -       100     0       65500 65516 i
  * >Ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001
                                  10.255.5.13           -       100     0       65500 65513 i
  *  ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001
@@ -1671,16 +1762,10 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.5.13           -       100     0       65500 65513 i
  *  ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
                                  10.255.5.13           -       100     0       65500 65513 i
- * >      RD: 10.255.5.18:101 mac-ip 1010002 5000.0052.0000
-                                 -                     -       -       0       i
  * >Ec    RD: 10.255.5.21:101 mac-ip 1010002 5000.005a.0001
                                  10.255.5.21           -       100     0       65500 65521 i
  *  ec    RD: 10.255.5.21:101 mac-ip 1010002 5000.005a.0001
                                  10.255.5.21           -       100     0       65500 65521 i
- * >      RD: 10.255.5.18:101 mac-ip 1010003 5000.0052.0000
-                                 -                     -       -       0       i
- * >      RD: 10.255.5.18:101 mac-ip 1010003 5000.0052.0000 192.168.0.100
-                                 -                     -       -       0       i
  * >Ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000
                                  10.255.5.11           -       100     0       65500 65511 i
  *  ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000
@@ -1689,10 +1774,6 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.5.11           -       100     0       65500 65511 i
  *  ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000 192.168.0.68
                                  10.255.5.11           -       100     0       65500 65511 i
- * >Ec    RD: 10.255.5.15:101 mac-ip 1010003 5000.005f.0000
-                                 10.255.5.15           -       100     0       65500 65515 i
- *  ec    RD: 10.255.5.15:101 mac-ip 1010003 5000.005f.0000
-                                 10.255.5.15           -       100     0       65500 65515 i
 
 ``` 
 ![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/Mikrotik.png)
