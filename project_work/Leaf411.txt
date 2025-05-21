@@ -1,0 +1,153 @@
+hostname leaf411
+
+username admin privilege 15 role network-admin secret sha512 $6$CpTmDOk4L.g6zHCh$oQgAqx5asBynwz78ADZhCn2jWuGFmFE8bNU4Io4RyResDO07abLyfR56DHCDEFCzM/k24RbmxO4xeGmx9rq7T.
+
+interface defaults
+   mtu 9192
+
+vlan 2
+   name externel
+
+vlan 3,255
+
+vrf instance anycast
+
+vrf instance anycast-right
+
+vrf instance mgmt
+
+aaa authorization exec default local
+
+interface Port-Channel1
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3,255
+   switchport mode trunk
+   
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1412
+      route-target import 00:00:00:00:14:12
+   lacp system-id 0000.0000.1412
+
+
+interface Ethernet48
+   channel-group 1 mode active
+
+interface Ethernet49
+   description -> spine401
+   no switchport
+   ip address 10.254.13.2/30
+
+interface Ethernet50
+   description spine402
+   no switchport
+   ip address 10.254.14.2/30
+
+interface Loopback0
+   ip address 10.255.4.11/32
+
+interface Loopback255
+   vrf mgmt
+   ip address 10.255.4.11/32
+
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.11.1/24
+
+interface Vlan3
+   description local
+   vrf anycast
+   ip address virtual 192.168.10.1/24
+
+interface Vlan33
+   vrf anycast-right
+   ip address virtual 192.168.10.1/24
+
+interface Vlan255
+   vrf mgmt
+   ip address virtual 10.0.0.1/30
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vlan 33 vni 1010033
+   vxlan vlan 255 vni 2550002
+   vxlan vrf anycast vni 2550004
+   vxlan vrf anycast-right vni 2560002
+   vxlan vrf mgmt vni 2550001
+   vxlan vlan 3 multicast group 225.10.10.3
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+ip routing vrf anycast-right
+ip routing vrf mgmt
+
+
+router bgp 65411
+   router-id 10.255.4.11
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65400
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 CrtfwFdT/uN/cvuGMXN9WIXEyNe6Chm3
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65400
+   neighbor UNDERLAY password 7 gTUCnU9RCsjTMbB+E8I1xgmqA48iX9su
+   neighbor UNDERLAY send-community
+   neighbor 10.254.13.1 peer group UNDERLAY
+   neighbor 10.254.13.1 description spine401
+   neighbor 10.254.14.1 peer group UNDERLAY
+   neighbor 10.254.14.1 description spine402
+   neighbor 10.255.4.1 peer group OVERLAY
+   neighbor 10.255.4.1 description spine401
+   neighbor 10.255.4.2 peer group OVERLAY
+   neighbor 10.255.4.2 description spine402
+   
+   vlan 255
+      rd 10.255.4.11:25502
+      route-target both 65500:25502
+      redistribute learned
+   
+   vlan-aware-bundle lan
+      rd 10.255.4.11:101
+      route-target both 65400:101
+      redistribute learned
+      redistribute igmp
+      vlan 2-3,33
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.4.11/32
+   
+   vrf anycast
+      rd 10.255.4.11:25504
+      route-target import evpn 65400:25504
+      route-target export evpn 65400:25504
+      network 192.168.10.0/24
+      network 192.168.11.0/24
+   
+   vrf anycast-right
+      rd 10.255.4.11:25604
+      route-target import evpn 65400:25604
+      route-target import evpn 65500:25502
+      route-target export evpn 65400:25604
+   
+   vrf mgmt
+      rd 10.255.4.11:25501
+      route-target import evpn 65400:25501
+      route-target export evpn 65400:25501
+      network 10.0.0.0/30
+      network 10.255.4.11/32
+
+end

@@ -1,0 +1,110 @@
+
+hostname spine501
+
+spanning-tree mode mstp
+no spanning-tree vlan-id 1-4094
+
+interface Ethernet1
+   description ->leaf511
+   no switchport
+   ip address 10.254.15.1/30
+
+interface Ethernet2
+   description ->leaf512
+   no switchport
+   ip address 10.254.15.5/30
+
+interface Ethernet3
+   description ->leaf513
+   no switchport
+   ip address 10.254.15.9/30
+
+interface Ethernet4
+   description ->leaf1414
+   no switchport
+   ip address 10.254.15.13/30
+
+interface Ethernet5
+   description ->leaf515
+   no switchport
+   ip address 10.254.15.17/30
+
+interface Ethernet6
+   description ->leaf516
+   no switchport
+   ip address 10.254.15.21/30
+
+interface Ethernet7
+   description ->leaf518
+   no switchport
+   ip address 10.254.15.25/30
+
+interface Ethernet8
+   description ->leaf519
+   no switchport
+   ip address 10.254.15.29/30
+
+interface Ethernet9
+   description ->leaf519
+   no switchport
+   ip address 10.254.15.33/30
+
+interface Ethernet10
+   description ->leaf520
+   no switchport
+   ip address 10.254.15.37/30
+
+interface Ethernet11
+   description ->leaf521
+   no switchport
+   ip address 10.254.15.41/30
+
+interface Ethernet12
+   description ->leaf522
+   no switchport
+   ip address 10.254.15.45/30
+
+interface Ethernet13
+   description ->GW1
+   no switchport
+   ip address 10.254.15.49/30
+
+interface Ethernet14
+   description ->GW2
+   no switchport
+   ip address 10.254.15.53/30
+
+interface Loopback0
+   ip address 10.255.5.1/32
+
+interface Management1
+
+ip routing
+
+router bgp 65500
+   router-id 10.255.5.1
+   update wait-install
+   no bgp default ipv4-unicast
+   bgp additional-paths send ecmp
+   bgp listen range 10.255.5.0/24 peer-group OVERLAY peer-filter leaf-as-range
+   bgp listen range 10.254.15.0/24 peer-group UNDERLAY peer-filter leaf-as-range
+   neighbor OVERLAY peer group
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 5
+   neighbor OVERLAY password 7 CrtfwFdT/uN/cvuGMXN9WIXEyNe6Chm3
+   neighbor OVERLAY send-community
+   neighbor OVERLAY maximum-routes 1000
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY password 7 gTUCnU9RCsjTMbB+E8I1xgmqA48iX9su
+   neighbor UNDERLAY send-community
+   neighbor UNDERLAY maximum-routes 100
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.1/32
+
+end

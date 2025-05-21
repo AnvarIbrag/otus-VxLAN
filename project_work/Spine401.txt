@@ -1,0 +1,91 @@
+hostname spine401
+
+interface Ethernet1
+   description ->leaf411
+   no switchport
+   ip address 10.254.13.1/30
+   pim ipv4 sparse-mode
+
+interface Ethernet2
+   description ->leaf412
+   no switchport
+   ip address 10.254.13.5/30
+   pim ipv4 sparse-mode
+
+interface Ethernet3
+   description ->leaf413
+   no switchport
+   ip address 10.254.13.9/30
+   pim ipv4 sparse-mode
+
+interface Ethernet4
+   description ->leaf1414
+   no switchport
+   ip address 10.254.13.13/30
+   pim ipv4 sparse-mode
+
+interface Ethernet5
+   description ->leaf415
+   no switchport
+   ip address 10.254.13.17/30
+   pim ipv4 sparse-mode
+
+interface Ethernet6
+   description ->leaf416
+   no switchport
+   ip address 10.254.13.21/30
+   pim ipv4 sparse-mode
+
+interface Ethernet7
+   description ->leaf418
+   no switchport
+   ip address 10.254.13.25/30
+   pim ipv4 sparse-mode
+
+interface Ethernet8
+   description ->leaf418
+   no switchport
+   ip address 10.254.13.29/30
+   pim ipv4 sparse-mode
+
+interface Ethernet9
+   description ->leaf419
+   no switchport
+   ip address 10.254.13.33/30
+   pim ipv4 sparse-mode
+
+interface Loopback0
+   ip address 10.255.4.1/32
+
+interface Management1
+
+ip routing
+
+router bgp 65400
+   router-id 10.255.4.1
+   update wait-install
+   no bgp default ipv4-unicast
+   bgp listen range 10.255.4.0/24 peer-group OVERLAY peer-filter leaf-as-range
+   bgp listen range 10.254.13.0/24 peer-group UNDERLAY peer-filter leaf-as-range
+   neighbor OVERLAY peer group
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 5
+   neighbor OVERLAY password 7 CrtfwFdT/uN/cvuGMXN9WIXEyNe6Chm3
+   neighbor OVERLAY send-community
+   neighbor OVERLAY maximum-routes 1000
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY password 7 gTUCnU9RCsjTMbB+E8I1xgmqA48iX9su
+   neighbor UNDERLAY send-community
+   neighbor UNDERLAY maximum-routes 100
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.4.1/32
+
+
+end

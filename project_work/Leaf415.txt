@@ -1,0 +1,114 @@
+hostname leaf415
+
+username admin role network-admin secret 5 $1$jl2KUbXm$FdJbZdjeMNbzZpVnO4MTU/
+
+interface defaults
+   mtu 9192
+
+vlan 2
+   name externel
+
+vlan 33
+
+vrf instance anycast-right
+
+vrf instance mgmt
+
+aaa authorization exec default local
+
+interface Ethernet13
+   switchport access vlan 33
+
+interface Ethernet49
+   description -> spine401
+   no switchport
+   ip address 10.254.13.18/30
+
+interface Ethernet50
+   description spine402
+   no switchport
+   ip address 10.254.14.18/30
+
+interface Loopback0
+   ip address 10.255.4.15/32
+!
+interface Loopback255
+   vrf mgmt
+   ip address 10.255.4.15/32
+
+interface Management1
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.11.1/24
+
+interface Vlan33
+   vrf anycast-right
+   ip address virtual 192.168.10.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 33 vni 1010033
+   vxlan vrf anycast-right vni 2560002
+   vxlan vrf mgmt vni 2550001
+ 
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast-right
+ip routing vrf mgmt
+
+router bgp 65415
+   router-id 10.255.4.15
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65400
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 CrtfwFdT/uN/cvuGMXN9WIXEyNe6Chm3
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65400
+   neighbor UNDERLAY password 7 gTUCnU9RCsjTMbB+E8I1xgmqA48iX9su
+   neighbor UNDERLAY send-community
+   neighbor 10.254.13.17 peer group UNDERLAY
+   neighbor 10.254.13.17 description spine401
+   neighbor 10.254.14.17 peer group UNDERLAY
+   neighbor 10.254.14.17 description spine402
+   neighbor 10.255.4.1 peer group OVERLAY
+   neighbor 10.255.4.1 description spine401
+   neighbor 10.255.4.2 peer group OVERLAY
+   neighbor 10.255.4.2 description spine402
+   
+   vlan-aware-bundle lan
+      rd 10.255.4.15:101
+      route-target both 65400:101
+      redistribute learned
+      redistribute igmp
+      vlan 2-3,33
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.4.15/32
+   
+   vrf anycast-right
+      rd 10.255.4.15:25604
+      route-target import evpn 65400:25604
+      route-target import evpn 65500:25502
+      route-target export evpn 65400:25604
+   
+   vrf mgmt
+      rd 10.255.4.15:25501
+      route-target import evpn 65400:25501
+      route-target export evpn 65400:25501
+      network 10.255.4.15/32
+
+end
