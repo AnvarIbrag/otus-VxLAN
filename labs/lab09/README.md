@@ -1,396 +1,1783 @@
-## BGP. Основы
+### 1. Топология сети:
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/VxLAN.JPG)
 
-### Цель
-Настроить BGP между автономными системами<br>
-Организовать доступность между офисами Москва и С.-Петербург<br>
+### 2.Распределение адресного пространства:
+### Адреса для интерфейсов Lo overlay:
+|Device|Ip-address
+|---|---|
+|Spine501| 10.255.5.1/32|
+|Spine502| 10.255.5.2/32|
+|Leaf511| 10.255.5.11/32|
+|Leaf512| 10.255.5.12/32|
+|Leaf513| 10.255.5.13/32|
+|Leaf514| 10.255.5.14/32|
+|Leaf515| 10.255.5.15/32|
+|Leaf516| 10.255.5.16/32|
+|Leaf517| 10.255.5.17/32|
+|Leaf518| 10.255.5.18/32|
+|Leaf519| 10.255.5.19/32|
+|Leaf520| 10.255.5.20/32|
+|Leaf521| 10.255.5.21/32|
+|Leaf522| 10.255.5.22/32|
 
-В этой  самостоятельной работе мы ожидаем, что вы самостоятельно:
+### Адреса для интерфейсов UnderLay:
+|Device|Port|Ip-address|---|Device|Port|Ip-address
+|---|---|---|---|---|---|---|
+|Spine501| Eth1| 10.254.15.1/30| < ---> |Leaf511| Eth49| 10.254.15.2/30|
+|Spine502| Eth1| 10.254.16.1/30| < ---> |Leaf511| Eth50|1 0.254.16.2/30|
+|Spine501| Eth2| 10.254.15.5/30| < ---> |Leaf512| Eth49| 10.254.15.6/30|
+|Spine502| Eth2| 10.254.16.5/30| < ---> |Leaf512| Eth50| 10.254.16.6/30|
+|Spine501| Eth3| 10.254.15.9/30| < ---> |Leaf513| Eth49| 10.254.15.10/30|
+|Spine502| Eth3| 10.254.16.9/30| < ---> |Leaf513| Eth50| 10.254.16.10/30|
+|Spine501| Eth4| 10.254.15.13/30| < ---> |Leaf514| Eth49| 10.254.15.14/30|
+|Spine502| Eth4| 10.254.16.13/30| < ---> |Leaf514| Eth50| 10.254.16.14/30|
+|Spine501| Eth5| 10.254.15.17/30| < ---> |Leaf515| Eth49| 10.254.15.18/30|
+|Spine502| Eth5| 10.254.16.17/30| < ---> |Leaf515| Eth50| 10.254.16.18/30|
+|Spine501| Eth6| 10.254.15.21/30| < ---> |Leaf516| Eth49| 10.254.15.22/30|
+|Spine502| Eth6| 10.254.16.21/30| < ---> |Leaf516| Eth50| 10.254.16.22/30|
+|Spine501| Eth7| 10.254.15.25/30| < ---> |Leaf517| Eth49| 10.254.15.26/30|
+|Spine502| Eth7| 10.254.16.25/30| < ---> |Leaf517| Eth50| 10.254.16.26/30|
+|Spine501| Eth8| 10.254.15.29/30| < ---> |Leaf518| Eth49| 10.254.15.30/30|
+|Spine502| Eth8| 10.254.16.29/30| < ---> |Leaf518| Eth50| 10.254.16.30/30|
+|Spine501| Eth9| 10.254.15.33/30| < ---> |Leaf519| Eth49| 10.254.15.34/30|
+|Spine502| Eth9| 10.254.16.33/30| < ---> |Leaf519| Eth50| 10.254.16.34/30|
+|Spine501| Eth10| 10.254.15.37/30| < ---> |Leaf520| Eth49| 10.254.15.38/30|
+|Spine502| Eth10| 10.254.16.37/30| < ---> |Leaf520| Eth50| 10.254.16.38/30|
+|Spine501| Eth11| 10.254.15.41/30| < ---> |Leaf521| Eth49| 10.254.15.42/30|
+|Spine502| Eth11| 10.254.16.41/30| < ---> |Leaf521| Eth50| 10.254.16.42/30|
+|Spine501| Eth12| 10.254.15.45/30| < ---> |Leaf522| Eth49| 10.254.15.46/30|
+|Spine502| Eth12| 10.254.16.45/30| < ---> |Leaf522| Eth50| 10.254.16.46/30|
 
-- Настроите eBGP между офисом Москва и двумя провайдерами - Киторн и Ламас.
-- Настроите eBGP между провайдерами Киторн и Ламас.
-- Настроите eBGP между Ламас и Триада.
-- Настроите eBGP между офисом С.-Петербург и провайдером Триада.
-- Организуете IP доступность между пограничным роутерами офисами Москва и С.-Петербург.
+### 3. План работ:
+   Необходимо разместить двух "клиентов" в разных VRF в рамках одной фабрики. Настроите маршрутизацию между клиентами через внешнее устройство (граничный роутер\фаерволл\etc). 
+      
+   Для overlay: 
+   - соединить по схеме интерфейсы
+   - ip адреса должны соответствовать схеме
+   - используем ip адреса интерфейсов подключенных к Spine добавляем их в eBGP
+   - настроить на двух пк разные подсети и привязать их в разные vlan
+   - настроить новую vrf
+   - создать новый vlan
+   - добавить внешнее устрово маршрутизации
+   - подключить его к Leaf518
+   - создать на leaf518 два новых vlan (под каждую vrf в vxlan), добавить адресацию из подсети /29, привязать новые vlan к интерфейсам
+   - на маршрутизируемом уст-ве провести аналогичные leaf518 настройки
+   - на leaf 518 и "маршрутизаторе" настраиваем сессии BGP и снимаем ограничения на транслирование маршрутов с собственной AS.
+   - проверяем маршрутизацию между vrf.
+   
+   
 
-
-TL;DR<br>
-[Примеры конфигов](https://github.com/gervold/otus-network-engineer/tree/main/labs/lab09/deploy/configs)
-
-
-### Минимальная настройка
-
-Анонс 100.0.0.0 с одной стороны:
+Конфигурации устройств:
 ```
-router bgp 1001
- bgp router-id 101.0.0.14
- network 100.0.0.0 mask 255.255.255.0
- neighbor 101.0.0.22 remote-as 101
+   Spine501:
+   
+   hostname spine501
+   aaa authorization exec default local
+   
+interface Ethernet1
+   description ->leaf511
+   no switchport
+   ip address 10.254.15.1/30
+   
+interface Ethernet2
+   description ->leaf512
+   no switchport
+   ip address 10.254.15.5/30
+   
+interface Ethernet3
+   description ->leaf513
+   no switchport
+   ip address 10.254.15.9/30
+   
+interface Ethernet4
+   description ->leaf1414
+   no switchport
+   ip address 10.254.15.13/30
+   
+
+interface Ethernet5
+   description ->leaf515
+   no switchport
+   ip address 10.254.15.17/30
+   
+
+interface Ethernet6
+   description ->leaf516
+   no switchport
+   ip address 10.254.15.21/30
+   
+
+interface Ethernet7
+   description ->leaf518
+   no switchport
+   ip address 10.254.15.25/30
+   
+
+interface Ethernet8
+   description ->leaf519
+   no switchport
+   ip address 10.254.15.29/30
+   
+
+interface Ethernet9
+   description ->leaf519
+   no switchport
+   ip address 10.254.15.33/30
+   
+
+interface Ethernet10
+   description ->leaf520
+   no switchport
+   ip address 10.254.15.37/30
+   
+
+interface Ethernet11
+   description ->leaf521
+   no switchport
+   ip address 10.254.15.41/30
+   
+
+interface Ethernet12
+   description ->leaf522
+   no switchport
+   ip address 10.254.15.45/30
+   
+
+interface Loopback0
+   ip address 10.255.5.1/32
+   
+router bgp 65500
+   router-id 10.255.5.1
+   update wait-install
+   no bgp default ipv4-unicast
+   bgp listen range 10.255.5.0/24 peer-group OVERLAY peer-filter leaf-as-range
+   bgp listen range 10.254.15.0/24 peer-group UNDERLAY peer-filter leaf-as-range
+   neighbor OVERLAY peer group
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 5
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor OVERLAY maximum-routes 1000
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor UNDERLAY maximum-routes 100
+   
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.1/32
+
+ip routing
+end
 ```
-
-Прием анонсов с другой стороны:
+Spine502
 ```
-router bgp 101
- bgp router-id 101.0.0.22
- neighbor 101.0.0.14 remote-as 1001
+hostname spine502
+
+aaa authorization exec default local
+
+interface Ethernet1
+   description ->leaf511
+   no switchport
+   ip address 10.254.16.1/30
+
+interface Ethernet2
+   description ->leaf512
+   no switchport
+   ip address 10.254.16.5/30
+ 
+interface Ethernet3
+   description ->leaf513
+   no switchport
+   ip address 10.254.16.9/30
+  
+interface Ethernet4
+   description ->leaf514
+   no switchport
+   ip address 10.254.16.13/30
+   
+interface Ethernet5
+   description ->leaf515
+   no switchport
+   ip address 10.254.16.17/30
+  
+interface Ethernet6
+   description ->leaf516
+   no switchport
+   ip address 10.254.16.21/30
+
+interface Ethernet7
+   description ->leaf517
+   no switchport
+   ip address 10.254.16.25/30
+
+interface Ethernet8
+   description ->leaf518
+   no switchport
+   ip address 10.254.16.29/30
+
+interface Ethernet9
+   description ->leaf519
+   no switchport
+   ip address 10.254.16.33/30
+
+interface Ethernet10
+   description ->leaf520
+   no switchport
+   ip address 10.254.16.37/30
+
+
+interface Ethernet11
+   description ->leaf521
+   no switchport
+   ip address 10.254.16.41/30
+
+interface Ethernet12
+   description ->leaf522
+   no switchport
+   ip address 10.254.16.45/30
+ 
+interface Loopback0
+   ip address 10.255.5.2/32
+
+ip routing
+
+router bgp 65500
+   router-id 10.255.5.2
+   update wait-install
+   no bgp default ipv4-unicast
+   bgp listen range 10.255.5.0/24 peer-group OVERLAY peer-filter leaf-as-range
+   bgp listen range 10.254.16.0/24 peer-group UNDERLAY peer-filter leaf-as-range
+   neighbor OVERLAY peer group
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 5
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor OVERLAY maximum-routes 1000
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor UNDERLAY maximum-routes 100
+   !
+   address-family evpn
+      neighbor OVERLAY activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.2/32
+
+end
 ```
-
-### Цепочки таблиц маршрутизации и команды
-
-![img_4.png](img_4.png)
-
-#### IPv4
+Leaf511
 ```
-show ip route
-show ip route bgp
-show ip bgp
-show ip bgp summary
-show ip bgp neighbors 30.0.0.15 advertised-routes
+hostname leaf511
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet12
+   switchport access vlan 2
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.2/30
+   
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.2/30
+   
+interface Loopback0
+   ip address 10.255.5.11/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan virtual-router encapsulation mac-address 00:00:00:00:00:01
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+   
+ip routing
+ip routing vrf anycast
+
+router bgp 65511
+   router-id 10.255.5.11
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor default send-community
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor 10.254.15.1 peer group UNDERLAY
+   neighbor 10.254.15.1 description spine501
+   neighbor 10.254.16.1 peer group UNDERLAY
+   neighbor 10.254.16.1 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+   
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.11/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-#### IPv6
+Leaf512
 ```
-show ipv6 route
-show ipv6 route bgp
-show bgp ipv6 unicast
-show bgp ipv6 unicast summary
-show bgp ipv6 unicast neighbors 2001:301:15:21::2 advertised-routes
+hostname leaf512
+
+interface Port-Channel3
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1413
+      route-target import 00:00:00:00:14:13
+   lacp system-id 0000.0000.1413
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet12
+   channel-group 3 mode active
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.6/30
+
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.6/30
+
+
+interface Loopback0
+   ip address 10.255.5.12/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65512
+   router-id 10.255.5.12
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.5 peer group UNDERLAY
+   neighbor 10.254.15.5 description spine501
+   neighbor 10.254.16.5 peer group UNDERLAY
+   neighbor 10.254.16.5 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+  
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.12/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-
-### Проверка BGP-связности между Москвой и Питером
-
-Маршруты со стороны Питера:
+Leaf513
 ```
-R18#show ip bgp
-BGP table version is 5, local router ID is 52.0.1.18
-Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
-              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
-              x best-external, a additional-path, c RIB-compressed,
-Origin codes: i - IGP, e - EGP, ? - incomplete
-RPKI validation codes: V valid, I invalid, N Not found
+hostname leaf513
 
-     Network          Next Hop            Metric LocPrf Weight Path
- *>  100.0.0.0/24     52.0.1.24                              0 520 301 101 1001 i
- *>  100.0.1.0/24     52.0.1.24                              0 520 301 1001 i
- *>  200.0.0.0        0.0.0.0                  0         32768 i
- *>  200.0.1.0        0.0.0.0                  0         32768 i
+interface Port-Channel3
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1413
+      route-target import 00:00:00:00:14:13
+   lacp system-id 0000.0000.1413
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet12
+   channel-group 3 mode active
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.10/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.10/30
+
+interface Loopback0
+   ip address 10.255.5.13/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+   
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65513
+   router-id 10.255.5.13
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.9 peer group UNDERLAY
+   neighbor 10.254.15.9 description spine501
+   neighbor 10.254.16.9 peer group UNDERLAY
+   neighbor 10.254.16.9 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+ 
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.13/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-Со стороны Москвы:
+Leaf514
 ```
-R14#show ip bgp
-BGP table version is 8, local router ID is 101.0.0.14
-Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
-              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
-              x best-external, a additional-path, c RIB-compressed,
-Origin codes: i - IGP, e - EGP, ? - incomplete
-RPKI validation codes: V valid, I invalid, N Not found
+hostname leaf514
 
-     Network          Next Hop            Metric LocPrf Weight Path
- *>  100.0.0.0/24     0.0.0.0                  0         32768 i
- *>  200.0.0.0        101.0.0.22                             0 101 301 520 2042 i
- *>  200.0.1.0        101.0.0.22                             0 101 301 520 2042 i
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.14/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.14/30
+ 
+interface Loopback0
+   ip address 10.255.5.14/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+   
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65514
+   router-id 10.255.5.14
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.13 peer group UNDERLAY
+   neighbor 10.254.15.13 description spine501
+   neighbor 10.254.16.13 peer group UNDERLAY
+   neighbor 10.254.16.13 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+   
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.14/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-Отмему, что R14 получает маршруты через стык между Киторн (AS101) и Ламас (AS301), так как сессия между Киторн (AS101) и Триада (AS520) не поднята, по условию.
-
+Leaf515
 ```
-R15#show ip bgp
-BGP table version is 8, local router ID is 30.0.0.15
-Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
-              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
-              x best-external, a additional-path, c RIB-compressed,
-Origin codes: i - IGP, e - EGP, ? - incomplete
-RPKI validation codes: V valid, I invalid, N Not found
+hostname leaf515
 
-     Network          Next Hop            Metric LocPrf Weight Path
- *>  100.0.1.0/24     0.0.0.0                  0         32768 i
- *>  200.0.0.0        30.0.0.21                              0 301 520 2042 i
- *>  200.0.1.0        30.0.0.21                              0 301 520 2042 i
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet12
+   switchport access vlan 2
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.18/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.18/30
+
+interface Loopback0
+   ip address 10.255.5.15/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+   
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65515
+   router-id 10.255.5.15
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.17 peer group UNDERLAY
+   neighbor 10.254.15.17 description spine501
+   neighbor 10.254.16.17 peer group UNDERLAY
+   neighbor 10.254.16.17 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+  
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.15/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-### Проверка доступности (ping) между Москвой и Питером
-
-Проверим доступность между бордерами.  
-
+Leaf516
 ```
-R18#ping 100.0.1.15 source 200.0.0.18
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 100.0.1.15, timeout is 2 seconds:
-Packet sent with a source address of 200.0.0.18
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
+hostname leaf516
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vlan 4
+
+vrf instance anycast
+
+vrf instance servers
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.22/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.22/30
+
+interface Loopback0
+   ip address 10.255.5.16/32
+
+interface Loopback1
+   vrf servers
+   ip address 10.255.5.16/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vlan4
+   vrf servers
+   ip address virtual 10.0.0.1/30
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vlan 4 vni 2550004
+   vxlan vrf anycast vni 2550002
+   vxlan vrf servers vni 2550001
+   
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+ip routing vrf servers
+
+router bgp 65516
+   router-id 10.255.5.16
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.21 peer group UNDERLAY
+   neighbor 10.254.15.21 description spine501
+   neighbor 10.254.16.21 peer group UNDERLAY
+   neighbor 10.254.16.21 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+
+   vlan 4
+      rd 10.255.5.16:25504
+      route-target both 65500:25504
+      redistribute learned
+ 
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+    address-family evpn
+      neighbor OVERLAY activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.16/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+   vrf servers
+      rd 10.255.5.16:25501
+      route-target import evpn 65500:25501
+      route-target export evpn 65500:25501
+      network 10.5.0.0/24
+      network 10.255.5.16/32
+
+end
 ```
+Leaf517
 ```
-R18#traceroute 100.0.1.15 source 200.0.0.18
-Type escape sequence to abort.
-Tracing the route to 100.0.1.15
-VRF info: (vrf in name/id, vrf out name/id)
-  1 52.0.1.24 0 msec 1 msec 0 msec
-  2 52.0.0.21 0 msec 0 msec 0 msec
-  3 30.0.0.15 1 msec 1 msec *
+hostname leaf517
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet13
+   switchport access vlan 3
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.26/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.26/30
+
+interface Loopback0
+   ip address 10.255.5.17/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65517
+   router-id 10.255.5.17
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.25 peer group UNDERLAY
+   neighbor 10.254.15.25 description spine501
+   neighbor 10.254.16.25 peer group UNDERLAY
+   neighbor 10.254.16.25 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+  
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.17/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-<details>
-
-<summary> Для Москвы – аналогично </summary>
-
+Leaf518
 ```
-R14#ping 200.0.0.18 source 100.0.0.14
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 200.0.0.18, timeout is 2 seconds:
-Packet sent with a source address of 100.0.0.14
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/2 ms
-R14#
+hostname leaf518
+
+vlan 2
+   name externel
+
+vlan 3
+   name internel
+   
+vlan 200
+
+vlan 300
+
+vrf instance anycast
+
+vrf instance servers
+
+interface Ethernet11
+   no switchport
+
+interface Ethernet11.200
+   encapsulation dot1q vlan 200
+   vrf servers
+   ip address 10.250.50.2/29
+
+interface Ethernet11.300
+   encapsulation dot1q vlan 300
+   vrf anycast
+   ip address 10.250.60.2/29
+
+interface Ethernet49
+   description -> spine401
+   no switchport
+   ip address 10.254.15.30/30
+
+interface Ethernet50
+   description spine402
+   no switchport
+   ip address 10.254.16.30/30
+
+interface Loopback0
+   ip address 10.255.5.18/32
+
+interface Loopback1
+   vrf servers
+   ip address 10.255.5.18/32
+
+interface Management1
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+
+interface Vlan3
+   description internal
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vlan4
+   vrf servers
+   ip address virtual 10.5.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vlan 4 vni 2550004
+   vxlan vrf anycast vni 2550002
+   vxlan vrf servers vni 2550001
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+ip routing vrf servers
+
+router bgp 65518
+   router-id 10.255.5.18
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.29 peer group UNDERLAY
+   neighbor 10.254.15.29 description spine401
+   neighbor 10.254.16.29 peer group UNDERLAY
+   neighbor 10.254.16.29 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+
+   vlan 4
+      rd 10.255.5.18:25504
+      route-target both 65500:25504
+      redistribute learned
+
+   vlan-aware-bundle lan
+      rd 10.255.5.18:101
+      route-target both 65500:101
+      redistribute learned
+      redistribute igmp
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.18/32
+
+   vrf anycast
+      rd 10.255.5.18:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      neighbor 10.250.60.1 remote-as 65530
+      neighbor 10.250.60.1 allowas-in 10
+      !
+      address-family ipv4
+         neighbor 10.250.60.1 activate
+         network 192.168.0.0/24
+         network 192.168.1.0/24
+
+   vrf servers
+      rd 10.255.5.18:25501
+      route-target import evpn 65500:25501
+      route-target export evpn 65500:25501
+      no bgp default ipv4-unicast
+      neighbor 10.250.50.1 remote-as 65530
+      neighbor 10.250.50.1 allowas-in 10
+      neighbor 10.250.50.1 send-community
+      !
+      address-family ipv4
+         neighbor 10.250.50.1 activate
+         network 10.255.5.18/32
+
+end
 ```
-
+Leaf519
 ```
-R15#ping 200.0.1.18 source 100.0.1.15
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 200.0.1.18, timeout is 2 seconds:
-Packet sent with a source address of 100.0.1.15
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
+hostname leaf519
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.34/30
+
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.34/30
+
+interface Loopback0
+   ip address 10.255.5.19/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65519
+   router-id 10.255.5.19
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.33 peer group UNDERLAY
+   neighbor 10.254.15.33 description spine401
+   neighbor 10.254.16.33 peer group UNDERLAY
+   neighbor 10.254.16.33 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+   
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.19/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-</details>
-
-Отмечу, что если не указывать source, то ICMP-ответы не найдут своего получателя,
-так как путей до адреса бордера в таблицах маршрутизации нет.
-
-Например 
+Leaf520
 ```
-R18#ping 100.0.1.15
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 100.0.1.15, timeout is 2 seconds:
-.....
-Success rate is 0 percent (0/5)
+hostname leaf520
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Port-Channel1
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1412
+      route-target import 00:00:00:00:14:12
+   lacp system-id 0000.0000.1412
+
+interface Ethernet12
+   channel-group 1 mode active
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.38/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.38/30
+
+interface Loopback0
+   ip address 10.255.5.20/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65520
+   router-id 10.255.5.20
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.37 peer group UNDERLAY
+   neighbor 10.254.15.37 description spine401
+   neighbor 10.254.16.37 peer group UNDERLAY
+   neighbor 10.254.16.37 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.20/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
 ```
-
-![img.png](img.png)
-
-Так как R15 понятия не имеет, где находится сеть с адресом бордера `52.0.1.18`.
-
-<details> 
-
-<summary> R15# show ip route </summary>
-
+Leaf521
 ```
-R15#show ip route
-Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
-       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
-       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
-       E1 - OSPF external type 1, E2 - OSPF external type 2
-       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
-       ia - IS-IS inter area, * - candidate default, U - per-user static route
-       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
-       a - application route
-       + - replicated route, % - next hop override
+hostname leaf521
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Port-Channel1
+   switchport trunk native vlan tag
+   switchport trunk allowed vlan 2-3
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:1412
+      route-target import 00:00:00:00:14:12
+   lacp system-id 0000.0000.1412
+
+interface Ethernet12
+   channel-group 1 mode active
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.42/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.42/30
+ 
+interface Loopback0
+   ip address 10.255.5.21/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65521
+   router-id 10.255.5.21
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.41 peer group UNDERLAY
+   neighbor 10.254.15.41 description spine401
+   neighbor 10.254.16.41 peer group UNDERLAY
+   neighbor 10.254.16.41 description spine402
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine401
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine402
+  
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.21/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
+```
+Leaf522
+```
+hostname leaf522
+
+vlan 2
+   name externel
+
+vlan 3
+   name internal   
+
+vrf instance anycast
+
+interface Ethernet49
+   description -> spine501
+   no switchport
+   ip address 10.254.15.46/30
+
+interface Ethernet50
+   description spine502
+   no switchport
+   ip address 10.254.16.46/30
+
+interface Loopback0
+   ip address 10.255.5.22/32
+
+interface Vlan2
+   vrf anycast
+   ip address virtual 192.168.1.1/24
+   
+interface Vlan3
+   vrf anycast
+   ip address virtual 192.168.0.1/24
+
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 2 vni 1010002
+   vxlan vlan 3 vni 1010003
+   vxlan vrf anycast vni 2550002
+
+ip virtual-router mac-address 00:00:00:00:00:01
+
+ip routing
+ip routing vrf anycast
+
+router bgp 65522
+   router-id 10.255.5.22
+   no bgp default ipv4-unicast
+   maximum-paths 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65500
+   neighbor OVERLAY next-hop-unchanged
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY ebgp-multihop 3
+   neighbor OVERLAY password 7 yOrMEmhcEvH/dZMG/Vsi153kXS5Fe31k
+   neighbor OVERLAY send-community
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY password 7 3TMOe34NFW4PqoE/aAGaL2L3G5H/UReF
+   neighbor UNDERLAY send-community
+   neighbor 10.254.15.45 peer group UNDERLAY
+   neighbor 10.254.15.45 description spine501
+   neighbor 10.254.16.45 peer group UNDERLAY
+   neighbor 10.254.16.45 description spine502
+   neighbor 10.255.5.1 peer group OVERLAY
+   neighbor 10.255.5.1 description spine501
+   neighbor 10.255.5.2 peer group OVERLAY
+   neighbor 10.255.5.2 description spine502
+   
+   vlan-aware-bundle lan
+      rd 10.255.5.11:101
+      route-target both 65500:101
+      redistribute learned
+      vlan 2-3
+
+   address-family evpn
+      neighbor OVERLAY activate
+   
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.255.5.22/32
+
+   vrf anycast
+      rd 10.255.5.11:25502
+      route-target import evpn 65500:25502
+      route-target export evpn 65500:25502
+      network 192.168.0.0/24
+      network 192.168.1.0/24
+
+end
+```   
+R1
+```
+hostname R1
+
+spanning-tree mode mstp
+no spanning-tree vlan-id 1-4094
+
+vlan 200,300
+
+interface Ethernet1
+   switchport trunk allowed vlan 200,300
+   switchport mode trunk
+
+interface Ethernet2
+   switchport trunk allowed vlan 200,300
+   switchport mode trunk
+
+interface Loopback1
+   ip address 1.1.1.1/32
+
+interface Management1
+
+interface Vlan200
+   ip address 10.250.50.1/29
+
+interface Vlan300
+   ip address 10.250.60.1/29
+
+ip routing
+
+ip as-path regex-mode string
+ip as-path access-list allow-any permit .* any
+
+route-map allow-loop permit 10
+   match as-path allow-any
+
+router bgp 65530
+   router-id 10.250.50.1
+   neighbor 10.250.50.2 remote-as 65518
+   neighbor 10.250.50.2 remove-private-as all replace-as
+   neighbor 10.250.50.2 route-map allow-loop out
+   neighbor 10.250.50.3 remote-as 65519
+   neighbor 10.250.50.3 shutdown
+   neighbor 10.250.50.3 remove-private-as all replace-as
+   neighbor 10.250.50.3 route-map allow-loop out
+   neighbor 10.250.60.2 remote-as 65518
+   neighbor 10.250.60.2 remove-private-as all replace-as
+   neighbor 10.250.60.2 route-map allow-loop out
+   neighbor 10.250.60.3 remote-as 65519
+   neighbor 10.250.60.3 shutdown
+   neighbor 10.250.60.3 remove-private-as all replace-as
+   neighbor 10.250.60.3 route-map allow-loop out
+   network 1.1.1.1/32
+
+end
+```   
+
+### 3. Доступность пк в разных vrf:
+
+``` 
+lleaf511#show ip route vrf anycast 
+
+VRF: anycast
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
 
 Gateway of last resort is not set
 
-      10.0.0.0/8 is variably subnetted, 6 subnets, 2 masks
-C        10.0.1.0/24 is directly connected, Ethernet0/1
-L        10.0.1.15/32 is directly connected, Ethernet0/1
-C        10.0.2.0/24 is directly connected, Ethernet0/0
-L        10.0.2.15/32 is directly connected, Ethernet0/0
-C        10.0.3.0/24 is directly connected, Ethernet0/3
-L        10.0.3.15/32 is directly connected, Ethernet0/3
-      30.0.0.0/8 is variably subnetted, 2 subnets, 2 masks
-C        30.0.0.0/24 is directly connected, Ethernet0/2
-L        30.0.0.15/32 is directly connected, Ethernet0/2
-      100.0.0.0/8 is variably subnetted, 2 subnets, 2 masks
-C        100.0.1.0/24 is directly connected, Loopback1
-L        100.0.1.15/32 is directly connected, Loopback1
-B     200.0.0.0/24 [20/0] via 30.0.0.21, 00:42:16
-B     200.0.1.0/24 [20/0] via 30.0.0.21, 00:42:16
-```
-
-</details>
-
-
-Но про анонсируемые по BGP сети знает:
-```
-R15#show ip route bgp
-
-B     200.0.0.0/24 [20/0] via 30.0.0.21, 00:45:38
-B     200.0.1.0/24 [20/0] via 30.0.0.21, 00:45:38
-```
-
-Поэтому адрес спуфили:
-```
-R18#ping 100.0.1.15 source 200.0.1.18
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 100.0.1.15, timeout is 2 seconds:
-Packet sent with a source address of 200.0.1.18
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
-```
-
-![img_1.png](img_1.png)
+ B E      1.1.1.1/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.49/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.16/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.18/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.19/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ C        192.168.0.0/24
+           directly connected, Vlan3
+ B E      192.168.1.69/32 [200/0]
+           via VTEP 10.255.5.12 VNI 2550002 router-mac 50:00:00:ca:26:23 local-interface Vxlan1
+           via VTEP 10.255.5.13 VNI 2550002 router-mac 50:00:00:9d:e9:64 local-interface Vxlan1
+ C        192.168.1.0/24
+           directly connected, Vlan2
 
 
-### Настройка IPv6 сессий
+leaf516#show ip route vrf anycast 
 
-Для настройки передачи IPv6 префиксов используется MP-BGP с указанием `address-family`.
+VRF: anycast
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
 
-Возможность установить MP-BGP сессию двумя способами:
-- IPv6 ребро через которое идут IPv6 префиксы
-- IPv4 ребро через которые идут IPv6 префиксы
+Gateway of last resort is not set
 
-<details>
-<summary>
-Картинки
-</summary>
+ B E      1.1.1.1/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.49/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.5.0.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.16/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.18/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.19/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550002 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.0.68/32 [200/0]
+           via VTEP 10.255.5.11 VNI 2550002 router-mac 50:00:00:d9:60:88 local-interface Vxlan1
+ C        192.168.0.0/24
+           directly connected, Vlan3
+ B E      192.168.1.69/32 [200/0]
+           via VTEP 10.255.5.12 VNI 2550002 router-mac 50:00:00:ca:26:23 local-interface Vxlan1
+           via VTEP 10.255.5.13 VNI 2550002 router-mac 50:00:00:9d:e9:64 local-interface Vxlan1
+ C        192.168.1.0/24
+           directly connected, Vlan2
 
-IPv6 ребро через которое идут IPv6 префиксы
-![img_2.png](img_2.png)
+leaf516#show ip route vrf servers 
 
-IPv4 ребро через которые идут IPv6 префиксы
-![img_3.png](img_3.png)
+VRF: servers
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
 
-</details>
+Gateway of last resort is not set
 
-Для указания специфичных настроек для IPv4 и IPv6 (например, ребер и сетей) используется 
-клюяевое слово `address-family'. 
-
-Пример конфигурации с использованием `address-family` для передачи IPv6 префиксов через IPv6 соседа (типичная конфигурация):
-
-```
-!
-router bgp 1001
- bgp router-id 101.0.0.14
- bgp log-neighbor-changes
- neighbor 101.0.0.22 remote-as 101
- neighbor 2001:101:14:22::2 remote-as 101
-  !
- address-family ipv4
-   network 100.0.0.0 mask 255.255.255.0
-   neighbor 101.0.0.21 activate
-   no neighbor 2001:101:14:22::2 activate
- exit-address-family
- !
- address-family ipv6
-  network 2001:1001:0:100::14/128
-  neighbor 2001:101:14:22::2 activate
- exit-address-family
-!
-```
-
-При помощи `no neighbor` и `activate` задаем ребро для передачи префиксов. 
-
-<details> 
-
-<summary>
-Особенности случая, когда хотим распространять IPv6 префиксы через IPv4 соседа. 
-</summary>
-
-Про настройку можно почитать [тут](https://networklessons.com/bgp/multiprotocol-bgp-mp-bgp-configuration#MP-BGP_with_IPv4_adjacency_IPv6_prefixes).
-
-При указании IPv4 соседа он и будет подставляться как nexthop, но в невалидном формате.
-Примерно в таком – ` ::FFFF:192.168.0.21`.
-Соответственно полученные маршруты не пройдут проверку валидности nexthop (см. таблицу выше) и не распространены. 
+ B E      1.1.1.1/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ C        10.5.0.0/24
+           directly connected, Vlan4
+ C        10.255.5.16/32
+           directly connected, Loopback1
+ B E      10.255.5.18/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      10.255.5.19/32 [200/0]
+           via VTEP 10.255.5.19 VNI 2550001 router-mac 50:00:00:29:5c:f6 local-interface Vxlan1
+ B E      192.168.0.68/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.0.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.1.69/32 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
+ B E      192.168.1.0/24 [200/0]
+           via VTEP 10.255.5.18 VNI 2550001 router-mac 50:00:00:23:58:17 local-interface Vxlan1
 
 
-Для исправления этого можно настроить `route-map IPV6_NEXT_HOP in` подменяющую nexthop на валидный. 
+R1#show ip route bgp 
 
+VRF: default
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
 
-```
-R22#show bgp ipv6 unicast summary
-BGP router identifier 101.0.0.22, local AS number 101
-BGP table version is 2, main routing table version 2
-4 network entries using 656 bytes of memory
-4 path entries using 416 bytes of memory
-3/1 BGP path/bestpath attribute entries using 432 bytes of memory
-3 BGP AS-PATH entries using 72 bytes of memory
-0 BGP route-map cache entries using 0 bytes of memory
-0 BGP filter-list cache entries using 0 bytes of memory
-BGP using 1576 total bytes of memory
-BGP activity 8/0 prefixes, 8/0 paths, scan interval 60 secs
+ B E      10.5.0.49/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.5.0.0/24 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.255.5.16/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.255.5.18/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      10.255.5.19/32 [200/0]
+           via 10.250.50.2, Vlan200
+ B E      192.168.0.68/32 [200/0]
+           via 10.250.60.2, Vlan300
+ B E      192.168.0.0/24 [200/0]
+           via 10.250.60.2, Vlan300
+ B E      192.168.1.69/32 [200/0]
+           via 10.250.60.2, Vlan300
+ B E      192.168.1.0/24 [200/0]
+           via 10.250.60.2, Vlan300
 
-Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-2001:101:14:22::1
-                4         1001      39      39        2    0    0 00:31:49        1
-192.168.0.21    4          301      43      42        2    0    0 00:31:44        3
-R22#
-R22#
-R22#show bgp ipv6 unicast
-BGP table version is 2, local router ID is 101.0.0.22
-Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
-              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
-              x best-external, a additional-path, c RIB-compressed,
+leaf518#show bgp evpn route-type mac-ip 
+BGP routing table information for VRF default
+Router identifier 10.255.5.18, local AS number 65518
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending best path selection
 Origin codes: i - IGP, e - EGP, ? - incomplete
-RPKI validation codes: V valid, I invalid, N Not found
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
-     Network          Next Hop            Metric LocPrf Weight Path
- *>  2001:1001:0:100::14/128
-                       2001:101:14:22::1
-                                                0             0 1001 i
- *   2001:1001:0:101::15/128
-                       ::FFFF:192.168.0.21
-                                                              0 301 1001 i
- *   2001:2024:0:200::18/128
-                       ::FFFF:192.168.0.21
-                                                              0 301 520 2042 i
- *   2001:2024:0:201::18/128
-                       ::FFFF:192.168.0.21
-                                                              0 301 520 2042 i
-R22#
-```
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000
+                                 10.255.5.16           -       100     0       65500 65516 i
+ *  ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000
+                                 10.255.5.16           -       100     0       65500 65516 i
+ * >Ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000 10.5.0.49
+                                 10.255.5.16           -       100     0       65500 65516 i
+ *  ec    RD: 10.255.5.16:25504 mac-ip 5000.002b.0000 10.5.0.49
+                                 10.255.5.16           -       100     0       65500 65516 i
+ * >Ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001
+                                 10.255.5.13           -       100     0       65500 65513 i
+ * >Ec    RD: 10.255.5.12:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
+                                 10.255.5.12           -       100     0       65500 65512 i
+ *  ec    RD: 10.255.5.12:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
+                                 10.255.5.12           -       100     0       65500 65512 i
+ * >Ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
+                                 10.255.5.13           -       100     0       65500 65513 i
+ *  ec    RD: 10.255.5.13:101 mac-ip 1010002 5000.0033.0001 192.168.1.69
+                                 10.255.5.13           -       100     0       65500 65513 i
+ * >Ec    RD: 10.255.5.21:101 mac-ip 1010002 5000.005a.0001
+                                 10.255.5.21           -       100     0       65500 65521 i
+ *  ec    RD: 10.255.5.21:101 mac-ip 1010002 5000.005a.0001
+                                 10.255.5.21           -       100     0       65500 65521 i
+ * >Ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000
+                                 10.255.5.11           -       100     0       65500 65511 i
+ *  ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000
+                                 10.255.5.11           -       100     0       65500 65511 i
+ * >Ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000 192.168.0.68
+                                 10.255.5.11           -       100     0       65500 65511 i
+ *  ec    RD: 10.255.5.11:101 mac-ip 1010003 5000.0058.0000 192.168.0.68
+                                 10.255.5.11           -       100     0       65500 65511 i
 
-</details>
+``` 
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1_anycast.JPG)
 
-<details>
-<summary>
-Про AFI и SAFI аттрибуты
-</summary>
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC2.JPG)
 
-MP-BGP is also used for MPLS VPN where we use MP-BGP to exchange the VPN labels.
-
-To allow these new addresses, MBGP has some new features that the old BGP doesn’t have:
-
-- Address Family Identifier (AFI): specifies the address family.
-- Subsequent Address Family Identifier (SAFI): Has additional information for some address families.
-- Multiprotocol Unreachable Network Layer Reachability Information (MP_UNREACH_NLRI): This is an attribute used to transport networks that are unreachable.
-</details>
-
-
-### Тест для IPv6
-
-Не забываем source для того, чтобы подставить адрес Loopback-а (изветной сети). 
-
-```
-R18#ping 2001:1001:0:101::15 source 2001:2024:0:200::18
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 2001:1001:0:101::15, timeout is 2 seconds:
-Packet sent with a source address of 2001:2024:0:200::18
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/4/18 ms
-R18#
-
-R18#ping 2001:1001:0:101::15 source 2001:2024:0:201::18
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 2001:1001:0:101::15, timeout is 2 seconds:
-Packet sent with a source address of 2001:2024:0:201::18
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
-```
-
-```
-R15#ping 2001:2024:0:201::18 source 2001:1001:0:101::15
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 2001:2024:0:201::18, timeout is 2 seconds:
-Packet sent with a source address of 2001:1001:0:101::15
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/2/10 ms
-R15#
-
-R15#ping 2001:2024:0:200::18 source 2001:1001:0:101::15
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 2001:2024:0:200::18, timeout is 2 seconds:
-Packet sent with a source address of 2001:1001:0:101::15
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
-```
-
+![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1_anycast2.JPG)
