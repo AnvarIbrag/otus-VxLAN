@@ -3218,11 +3218,6 @@ interface Vlan3
    vrf anycast
    ip address virtual 192.168.0.1/24
 
-interface Vlan4
-   vrf servers
-   ip address virtual 10.5.0.1/24
-
-
 ip virtual-router mac-address 00:00:00:00:00:01
 
 interface Vxlan1
@@ -3498,8 +3493,3 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
 
 
 ``` 
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1_anycast.JPG)
-
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC2.JPG)
-
-![Схема](https://github.com/AnvarIbrag/otus-VxLAN/blob/main/labs/lab08/PC1_anycast2.JPG)
